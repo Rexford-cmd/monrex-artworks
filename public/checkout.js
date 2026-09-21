@@ -40,18 +40,150 @@ const DELIVERY_RATES = {
   }
 };
 
-let cart = [];
+let allProducts = [];
+let cart = JSON.parse(localStorage.getItem('monrex_cart')) || [];
 let selectedDeliveryFee = 0;
 
 document.addEventListener("DOMContentLoaded", () => {
+  fetchProducts();
   initRegionDropdown();
-  updateTotals();
+  updateCartBadge();
 });
+
+// Section Switcher
+function showSection(sectionId) {
+  ['homeSection', 'aboutSection', 'trackSection', 'checkoutSection'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+
+  if (sectionId === 'home') document.getElementById('homeSection').style.display = 'block';
+  if (sectionId === 'products') {
+    document.getElementById('homeSection').style.display = 'block';
+    document.getElementById('productsSection').scrollIntoView({ behavior: 'smooth' });
+  }
+  if (sectionId === 'about') document.getElementById('aboutSection').style.display = 'block';
+  if (sectionId === 'track') document.getElementById('trackSection').style.display = 'block';
+  if (sectionId === 'checkout') {
+    document.getElementById('checkoutSection').style.display = 'block';
+    renderCheckoutCart();
+  }
+}
+
+// Fetch products from Neon DB
+async function fetchProducts() {
+  try {
+    const res = await fetch('/api/products');
+    const data = await res.json();
+    if (data.success) {
+      allProducts = data.products;
+      renderProducts(allProducts);
+    }
+  } catch (err) {
+    console.error("Error loading products:", err);
+  }
+}
+
+function renderProducts(products) {
+  const grid = document.getElementById('productGrid');
+  if (!grid) return;
+
+  if (products.length === 0) {
+    grid.innerHTML = '<p style="text-align:center; grid-column:1/-1; color:#777;">No products in this category.</p>';
+    return;
+  }
+
+  grid.innerHTML = products.map(p => `
+    <div class="product-card">
+      <img src="${p.image_url || 'https://via.placeholder.com/300x220?text=MonRex+Art'}" class="product-image" alt="${p.name}">
+      <div class="product-info">
+        <div>
+          <span class="product-category">${p.category}</span>
+          <h4 class="product-title">${p.name}</h4>
+          <p class="product-desc">${p.description || ''}</p>
+        </div>
+        <div>
+          <div class="product-price">GH₵ ${Number(p.price).toFixed(2)}</div>
+          ${p.in_stock ? `
+            <button class="btn-primary" style="width: 100%;" onclick="addToCart('${p.id}', '${p.name.replace(/'/g, "\\'")}', ${p.price})">
+              Add to Order
+            </button>
+          ` : `
+            <button class="btn-secondary" style="width: 100%; cursor: not-allowed;" disabled>Out of Stock</button>
+          `}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterCategory(cat, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  if (cat === 'All') {
+    renderProducts(allProducts);
+  } else {
+    renderProducts(allProducts.filter(p => p.category === cat));
+  }
+}
+
+// Cart System
+function addToCart(id, name, price) {
+  const existing = cart.find(i => i.id === id);
+  if (existing) {
+    existing.quantity += 1;
+  } else {
+    cart.push({ id, name, price, quantity: 1 });
+  }
+  localStorage.setItem('monrex_cart', JSON.stringify(cart));
+  updateCartBadge();
+  alert(`Added "${name}" to your order!`);
+}
+
+function updateCartBadge() {
+  const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const badge = document.getElementById('cartCount');
+  if (badge) badge.textContent = count;
+}
+
+function renderCheckoutCart() {
+  const list = document.getElementById('cartItemsList');
+  if (!list) return;
+
+  if (cart.length === 0) {
+    list.innerHTML = '<p style="color:#888;">Your cart is empty. Click "Add to Order" on products.</p>';
+    updateTotals();
+    return;
+  }
+
+  list.innerHTML = cart.map((item, idx) => `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; background:#222; padding:10px; border-radius:6px;">
+      <div>
+        <strong>${item.name}</strong><br>
+        <small style="color:#aaa;">GH₵ ${Number(item.price).toFixed(2)} x ${item.quantity}</small>
+      </div>
+      <div>
+        <button onclick="changeQty(${idx}, 1)" style="padding:2px 8px; background:#333; color:#fff; border:none; cursor:pointer;">+</button>
+        <button onclick="changeQty(${idx}, -1)" style="padding:2px 8px; background:#333; color:#fff; border:none; cursor:pointer;">-</button>
+      </div>
+    </div>
+  `).join('');
+
+  updateTotals();
+}
+
+function changeQty(idx, delta) {
+  cart[idx].quantity += delta;
+  if (cart[idx].quantity <= 0) cart.splice(idx, 1);
+  localStorage.setItem('monrex_cart', JSON.stringify(cart));
+  updateCartBadge();
+  renderCheckoutCart();
+}
 
 function initRegionDropdown() {
   const regionSelect = document.getElementById("regionSelect");
   const townSelect = document.getElementById("townSelect");
-
   if (!regionSelect) return;
 
   regionSelect.innerHTML = '<option value="">-- Choose Delivery Region --</option>';
@@ -87,42 +219,9 @@ function initRegionDropdown() {
   townSelect.addEventListener("change", (e) => {
     const reg = regionSelect.value;
     const town = e.target.value;
-    if (reg && town) {
-      selectedDeliveryFee = DELIVERY_RATES[reg][town] || 0;
-    } else {
-      selectedDeliveryFee = 0;
-    }
+    selectedDeliveryFee = (reg && town) ? (DELIVERY_RATES[reg][town] || 0) : 0;
     updateTotals();
   });
-}
-
-function addToCart(name, price) {
-  const existing = cart.find(item => item.name === name);
-  if (existing) {
-    existing.quantity += 1;
-  } else {
-    cart.push({ name, price, quantity: 1 });
-  }
-  renderCartList();
-  updateTotals();
-  alert(`Added "${name}" to your order!`);
-}
-
-function renderCartList() {
-  const cartList = document.getElementById("cartList");
-  if (!cartList) return;
-
-  if (cart.length === 0) {
-    cartList.innerHTML = '<p style="color: #777;">No items selected yet. Click "Add to Order" above.</p>';
-    return;
-  }
-
-  cartList.innerHTML = cart.map((item, index) => `
-    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem;">
-      <span>${item.name} (x${item.quantity})</span>
-      <span>GH₵ ${(item.price * item.quantity).toFixed(2)}</span>
-    </div>
-  `).join("");
 }
 
 function getSubtotal() {
@@ -133,25 +232,25 @@ function updateTotals() {
   const subtotal = getSubtotal();
   const total = subtotal + selectedDeliveryFee;
 
-  const subtotalElem = document.getElementById("subtotalDisplay");
-  const deliveryElem = document.getElementById("deliveryFeeDisplay");
-  const totalElem = document.getElementById("totalDisplay");
+  const subElem = document.getElementById("subtotalDisplay");
+  const delElem = document.getElementById("deliveryFeeDisplay");
+  const totElem = document.getElementById("totalDisplay");
 
-  if (subtotalElem) subtotalElem.textContent = `GH₵ ${subtotal.toFixed(2)}`;
-  if (deliveryElem) deliveryElem.textContent = `GH₵ ${selectedDeliveryFee.toFixed(2)}`;
-  if (totalElem) totalElem.textContent = `GH₵ ${total.toFixed(2)}`;
+  if (subElem) subElem.textContent = `GH₵ ${subtotal.toFixed(2)}`;
+  if (delElem) delElem.textContent = `GH₵ ${selectedDeliveryFee.toFixed(2)}`;
+  if (totElem) totElem.textContent = `GH₵ ${total.toFixed(2)}`;
 }
 
-async function handleCheckout(event) {
+async function handlePlaceOrder(event) {
   event.preventDefault();
 
   if (cart.length === 0) {
-    alert("Please add at least one item to your order.");
+    alert("Your cart is empty.");
     return;
   }
 
   const customerName = document.getElementById("customerName").value;
-  const customerPhone = document.getElementById("customerPhone").value;
+  const phone = document.getElementById("customerPhone").value;
   const region = document.getElementById("regionSelect").value;
   const town = document.getElementById("townSelect").value;
 
@@ -163,43 +262,79 @@ async function handleCheckout(event) {
   const subtotal = getSubtotal();
   const grandTotal = subtotal + selectedDeliveryFee;
 
-  const orderPayload = {
-    customerName,
-    phone: customerPhone,
-    region,
-    town,
-    deliveryFee: selectedDeliveryFee,
-    items: cart,
-    totalAmount: grandTotal,
-    paymentMethod: "MoMo"
-  };
-
   try {
-    await fetch("/api/orders", {
+    const res = await fetch("/api/orders", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(orderPayload)
+      body: JSON.stringify({
+        customerName,
+        phone,
+        region,
+        town,
+        deliveryFee: selectedDeliveryFee,
+        items: cart,
+        totalAmount: grandTotal,
+        paymentMethod: "MoMo"
+      })
     });
 
-    const orderItemsSummary = cart.map(i => `• ${i.name} (x${i.quantity}) - GH₵${i.price * i.quantity}`).join("\n");
+    const data = await res.json();
+    const orderCode = data.order ? data.order.order_code : 'MRX-' + Date.now();
+
+    const itemsText = cart.map(i => `• ${i.name} (x${i.quantity})`).join('\n');
     const waText = encodeURIComponent(
-      `Hello MonRex Artworks! 🎨\nI want to confirm my order:\n\n` +
+      `Hello MonRex Artworks! 🎨\nI placed order *#${orderCode}*:\n\n` +
       `*Name:* ${customerName}\n` +
-      `*Phone:* ${customerPhone}\n` +
-      `*Location:* ${town}, ${region}\n\n` +
-      `*Items:*\n${orderItemsSummary}\n\n` +
+      `*Phone:* ${phone}\n` +
+      `*Delivery:* ${town}, ${region}\n\n` +
+      `*Items:*\n${itemsText}\n\n` +
       `*Delivery Fee:* GH₵${selectedDeliveryFee.toFixed(2)}\n` +
       `*Total:* GH₵${grandTotal.toFixed(2)}\n\n` +
       `*Payment:* Direct MoMo (0507482090)`
     );
 
     cart = [];
-    renderCartList();
-    updateTotals();
+    localStorage.removeItem('monrex_cart');
+    updateCartBadge();
+
     window.location.href = `https://wa.me/233507482090?text=${waText}`;
+  } catch (err) {
+    alert("Error placing order. Redirecting to WhatsApp...");
+    window.location.href = `https://wa.me/233507482090`;
+  }
+}
+
+// Order Tracking
+async function trackOrder() {
+  const query = document.getElementById('trackInput').value.trim();
+  const resultDiv = document.getElementById('trackResult');
+  if (!query) return alert("Please enter your Order Code or Phone Number.");
+
+  resultDiv.innerHTML = '<p style="color:#aaa;">Searching Neon database...</p>';
+
+  try {
+    const res = await fetch(`/api/orders/track/${encodeURIComponent(query)}`);
+    const data = await res.json();
+
+    if (!data.success) {
+      resultDiv.innerHTML = `<p style="color:var(--accent-red);">${data.message}</p>`;
+      return;
+    }
+
+    resultDiv.innerHTML = data.orders.map(o => `
+      <div style="background:#222; padding:15px; border-radius:8px; margin-bottom:12px; border-left:4px solid var(--accent-red);">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h4>Order #${o.order_code}</h4>
+          <span class="status-badge status-${o.status.toLowerCase().includes('pending') ? 'pending' : (o.status.toLowerCase().includes('deliv') ? 'delivered' : 'production')}">
+            ${o.status}
+          </span>
+        </div>
+        <p style="font-size:0.88rem; color:#aaa; margin-top:5px;">Customer: <strong>${o.customer_name}</strong> | Location: <strong>${o.town}, ${o.region}</strong></p>
+        <p style="font-size:0.95rem; margin-top:8px;">Total: <strong>GH₵ ${Number(o.total_amount).toFixed(2)}</strong></p>
+      </div>
+    `).join('');
 
   } catch (err) {
-    alert("Order recorded. Redirecting to WhatsApp...");
-    window.location.href = `https://wa.me/233507482090`;
+    resultDiv.innerHTML = '<p style="color:var(--accent-red);">Error tracking order. Please try again.</p>';
   }
 }

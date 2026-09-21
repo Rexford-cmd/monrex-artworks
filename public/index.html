@@ -8,168 +8,158 @@
 </head>
 <body>
 
+  <!-- Top Announcement -->
   <div class="announcement-bar">
     ✨ Handmade with passion • Unique designs • Ghana-wide delivery available 🇬🇭
   </div>
 
+  <!-- Main Navigation Header -->
   <header class="header">
-    <div class="logo-area">
+    <div class="logo-area" onclick="showSection('home')">
       <h1>Mon<span>Rex</span> Artworks</h1>
       <p>CREATING BEAUTY, ONE BEAD AT A TIME</p>
     </div>
-    <div>
-      <a href="#checkout" style="color: #fff; text-decoration: none; font-weight: 600;">🛒 Checkout</a>
-    </div>
+    <nav class="nav-links">
+      <a href="javascript:void(0)" onclick="showSection('home')">Home</a>
+      <a href="javascript:void(0)" onclick="showSection('products')">Products</a>
+      <a href="javascript:void(0)" onclick="showSection('about')">About Us</a>
+      <a href="javascript:void(0)" onclick="showSection('track')">Track Order</a>
+      <a href="javascript:void(0)" onclick="showSection('checkout')" class="cart-btn">
+        🛒 Cart (<span id="cartCount">0</span>)
+      </a>
+    </nav>
   </header>
 
-  <section class="hero">
-    <h2>Handcrafted Elegance & Beadwork</h2>
-    <p>
-      Based in <strong>Ashaiman</strong>. Each piece is crafted with patience, creativity, and premium attention to detail.
-    </p>
-  </section>
+  <!-- ================= SECTION 1: HOME & HERO ================= -->
+  <main id="homeSection">
+    <section class="hero">
+      <h2>Handcrafted Elegance & Modern Beadwork</h2>
+      <p>
+        MonRex Artworks is a creative handmade brand focused on unique beadwork, handcrafted bags, and artistic décor in <strong>Ashaiman</strong>.
+      </p>
+      <div style="margin-top: 20px;">
+        <button class="btn-primary" onclick="showSection('products')">Explore Collection</button>
+        <button class="btn-secondary" onclick="showSection('track')">Track Your Order</button>
+      </div>
+    </section>
 
-  <section class="products-container">
-    <h3 class="section-title">Our Collection</h3>
-    <div class="product-grid">
-
-      <div class="product-card">
-        <div>
-          <span class="product-category">Handmade Beaded Bags</span>
-          <h4 class="product-title">Handmade Beaded Bag</h4>
-          <p class="product-desc">Stylish handmade beaded bag designed with detailed craftsmanship for a unique statement look.</p>
-        </div>
-        <div>
-          <div class="product-price">GH₵ 300.00</div>
-          <button class="btn-add" onclick="addToCart('Handmade Beaded Bag', 300)">Add to Order</button>
-        </div>
+    <!-- Category Filter Bar -->
+    <section class="container" id="productsSection">
+      <h3 class="section-title">Storefront Collection</h3>
+      
+      <div class="category-filters">
+        <button class="filter-btn active" onclick="filterCategory('All', this)">All Items</button>
+        <button class="filter-btn" onclick="filterCategory('Handmade Beaded Bags', this)">Handmade Beaded Bags</button>
+        <button class="filter-btn" onclick="filterCategory('Men\'s Beaded Bags', this)">Men's Beaded Bags</button>
+        <button class="filter-btn" onclick="filterCategory('Handmade Home Décor', this)">Home Décor</button>
       </div>
 
-      <div class="product-card">
-        <div>
-          <span class="product-category">Handmade Beaded Bags</span>
-          <h4 class="product-title">Premium Handmade Beaded Bag</h4>
-          <p class="product-desc">Beautiful handcrafted beaded bag combining artistic detail, functionality and contemporary style.</p>
+      <!-- Dynamic Product Grid -->
+      <div class="product-grid" id="productGrid">
+        <p style="text-align: center; color: #777; grid-column: 1/-1;">Loading catalog from Neon DB...</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- ================= SECTION 2: ABOUT US ================= -->
+  <section id="aboutSection" class="container" style="display:none;">
+    <div class="content-box">
+      <h3 class="section-title">About MonRex Artworks</h3>
+      <p style="font-size: 1.1rem; color: #ddd; margin-bottom: 20px;">
+        MonRex Artworks is a creative handmade brand focused on unique beadwork, handcrafted bags, jewelry and artistic pieces. Each piece is carefully made with creativity, patience and attention to detail, bringing together traditional craftsmanship and modern style. Our goal is to create beautiful, distinctive pieces that people can enjoy, wear and treasure.
+      </p>
+      <div class="info-grid">
+        <div class="info-item">
+          <h4>📍 Location</h4>
+          <p>Studio based in <strong>Ashaiman, Greater Accra</strong></p>
         </div>
-        <div>
-          <div class="product-price">GH₵ 350.00</div>
-          <button class="btn-add" onclick="addToCart('Premium Handmade Beaded Bag', 350)">Add to Order</button>
+        <div class="info-item">
+          <h4>📞 Direct Support</h4>
+          <p>Phone / WhatsApp: <strong>0507482090</strong></p>
+          <p>Email: <strong>kwakyerexford1@gmail.com</strong></p>
+        </div>
+        <div class="info-item">
+          <h4>💳 Payment Options</h4>
+          <p>Direct MTN/Telecel/AT MoMo & Ghana-wide shipping</p>
         </div>
       </div>
-
-      <div class="product-card">
-        <div>
-          <span class="product-category">Handmade Home Décor</span>
-          <h4 class="product-title">Handmade Beaded Tissue Box</h4>
-          <p class="product-desc">A decorative handmade beaded tissue box designed to add an elegant artistic touch to your space.</p>
-        </div>
-        <div>
-          <div class="product-price">GH₵ 150.00</div>
-          <button class="btn-add" onclick="addToCart('Handmade Beaded Tissue Box', 150)">Add to Order</button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <div>
-          <span class="product-category">Handmade Beaded Bags</span>
-          <h4 class="product-title">Classic Beaded Bag</h4>
-          <p class="product-desc">Unique handmade beaded bags carefully crafted with attention to detail and style.</p>
-        </div>
-        <div>
-          <div class="product-price">GH₵ 200.00</div>
-          <button class="btn-add" onclick="addToCart('Classic Beaded Bag', 200)">Add to Order</button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <div>
-          <span class="product-category">Men's Beaded Bags</span>
-          <h4 class="product-title">Men's Beaded Bag (Compact)</h4>
-          <p class="product-desc">Handmade beaded bag tailored with clean lines and minimal masculine aesthetic.</p>
-        </div>
-        <div>
-          <div class="product-price">GH₵ 150.00</div>
-          <button class="btn-add" onclick="addToCart('Men\'s Beaded Bag (Compact)', 150)">Add to Order</button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <div>
-          <span class="product-category">Men's Beaded Bags</span>
-          <h4 class="product-title">Men's Beaded Bag (Urban)</h4>
-          <p class="product-desc">Handcrafted modern bag for everyday carry with bold bead styling.</p>
-        </div>
-        <div>
-          <div class="product-price">GH₵ 200.00</div>
-          <button class="btn-add" onclick="addToCart('Men\'s Beaded Bag (Urban)', 200)">Add to Order</button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <div>
-          <span class="product-category">Men's Beaded Bags</span>
-          <h4 class="product-title">Men's Beaded Bag (Executive)</h4>
-          <p class="product-desc">Premium handcrafted beadwork designed for standout occasions.</p>
-        </div>
-        <div>
-          <div class="product-price">GH₵ 250.00</div>
-          <button class="btn-add" onclick="addToCart('Men\'s Beaded Bag (Executive)', 250)">Add to Order</button>
-        </div>
-      </div>
-
     </div>
   </section>
 
-  <section class="checkout-box" id="checkout">
-    <h3 style="margin-bottom: 20px; font-size: 1.5rem; text-align: center;">Delivery & Order</h3>
-
-    <div style="margin-bottom: 20px;">
-      <h4 style="font-size: 1rem; color: #fff; margin-bottom: 10px;">Selected Items:</h4>
-      <div id="cartList">
-        <p style="color: #777;">No items selected yet. Click "Add to Order" above.</p>
+  <!-- ================= SECTION 3: TRACK ORDER ================= -->
+  <section id="trackSection" class="container" style="display:none;">
+    <div class="checkout-box">
+      <h3 class="section-title">Track Your Order</h3>
+      <p style="text-align: center; color: #aaa; margin-bottom: 20px;">Enter your <strong>Order Code</strong> (e.g. MRX-1024) or <strong>Phone Number</strong></p>
+      
+      <div style="display: flex; gap: 10px;">
+        <input type="text" id="trackInput" placeholder="Enter Order Code or Phone Number" style="flex-grow: 1;">
+        <button class="btn-primary" onclick="trackOrder()">Search</button>
       </div>
+
+      <div id="trackResult" style="margin-top: 25px;"></div>
     </div>
-    
-    <form onsubmit="handleCheckout(event)">
-      <div class="form-group">
-        <label>Full Name *</label>
-        <input type="text" id="customerName" required placeholder="e.g. Kwakye Rexford">
-      </div>
-
-      <div class="form-group">
-        <label>Phone Number (MoMo / WhatsApp) *</label>
-        <input type="tel" id="customerPhone" required placeholder="0507482090">
-      </div>
-
-      <div class="form-group">
-        <label>Delivery Region *</label>
-        <select id="regionSelect" required></select>
-      </div>
-
-      <div class="form-group">
-        <label>Town / Pickup Point *</label>
-        <select id="townSelect" disabled required></select>
-      </div>
-
-      <div class="payment-notice">
-        <strong>Direct Mobile Money (MoMo) Details:</strong><br>
-        • Number: <strong>0507482090</strong><br>
-        • Account Name: <strong>Kwakye Rexford Ayeh</strong><br>
-        <small>Payment verification and dispatch update will be sent directly via WhatsApp.</small>
-      </div>
-
-      <div style="margin: 20px 0; border-top: 1px solid var(--border-color); padding-top: 15px;">
-        <p>Subtotal: <span id="subtotalDisplay" style="float: right; color: #fff;">GH₵ 0.00</span></p>
-        <p style="margin-top: 5px;">Delivery Fee: <span id="deliveryFeeDisplay" style="float: right; color: var(--accent-red); font-weight: bold;">GH₵ 0.00</span></p>
-        <h3 style="margin-top: 10px;">Total: <span id="totalDisplay" style="float: right;">GH₵ 0.00</span></h3>
-      </div>
-
-      <button type="submit" class="btn-add" style="padding: 15px; font-size: 1.1rem; margin-top: 10px;">
-        Confirm & Send via WhatsApp
-      </button>
-    </form>
   </section>
 
+  <!-- ================= SECTION 4: CART & CHECKOUT ================= -->
+  <section id="checkoutSection" class="container" style="display:none;">
+    <div class="checkout-box">
+      <h3 class="section-title">Delivery & Checkout</h3>
+
+      <!-- Selected Items -->
+      <div style="margin-bottom: 20px;">
+        <h4 style="color: #fff; margin-bottom: 10px;">Your Bag / Cart:</h4>
+        <div id="cartItemsList"></div>
+      </div>
+
+      <form onsubmit="handlePlaceOrder(event)">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" id="customerName" required placeholder="e.g. Rexford Kwakye">
+        </div>
+
+        <div class="form-group">
+          <label>Phone Number (MoMo / WhatsApp) *</label>
+          <input type="tel" id="customerPhone" required placeholder="0507482090">
+        </div>
+
+        <!-- Jumia-Style Region & Town Selection -->
+        <div class="form-group">
+          <label>Delivery Region *</label>
+          <select id="regionSelect" required></select>
+        </div>
+
+        <div class="form-group">
+          <label>Town / Pickup Point *</label>
+          <select id="townSelect" disabled required></select>
+        </div>
+
+        <!-- Direct MoMo Details -->
+        <div class="payment-notice">
+          <strong>Direct Mobile Money (MoMo) Details:</strong><br>
+          • Number: <strong>0507482090</strong><br>
+          • Account Name: <strong>Kwakye Rexford Ayeh</strong><br>
+          <small>Verification & order dispatch update will be sent directly via WhatsApp.</small>
+        </div>
+
+        <div class="order-summary-box">
+          <p>Subtotal: <span id="subtotalDisplay" class="summary-val">GH₵ 0.00</span></p>
+          <p>Delivery Fee: <span id="deliveryFeeDisplay" class="summary-val" style="color: var(--accent-red);">GH₵ 0.00</span></p>
+          <hr style="border-color: #333; margin: 10px 0;">
+          <h3 style="display: flex; justify-content: space-between;">
+            <span>Total:</span>
+            <span id="totalDisplay">GH₵ 0.00</span>
+          </h3>
+        </div>
+
+        <button type="submit" class="btn-primary" style="width: 100%; padding: 15px; margin-top: 15px; font-size: 1.1rem;">
+          Confirm & Send Order via WhatsApp
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Floating WhatsApp Contact Button -->
   <a href="https://wa.me/233507482090" class="whatsapp-float" target="_blank">
     💬 WhatsApp MonRex
   </a>

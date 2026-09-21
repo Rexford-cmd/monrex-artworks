@@ -2,49 +2,242 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Admin - Orders | MonRex Artworks</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | MonRex Artworks</title>
   <style>
-    body { background: #0f0f0f; color: #fff; font-family: sans-serif; padding: 20px; }
-    h1 { color: #d32f2f; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #181818; }
-    th, td { padding: 12px; border: 1px solid #333; text-align: left; }
+    :root { --bg: #0f0f0f; --card: #181818; --red: #d32f2f; --text: #fff; --border: #2e2e2e; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 20px; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+    h1 span { color: var(--red); }
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+    .tab-btn { background: var(--card); color: #fff; border: 1px solid var(--border); padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+    .tab-btn.active { background: var(--red); border-color: var(--red); }
+    .panel { display: none; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { padding: 12px; border: 1px solid var(--border); text-align: left; font-size: 0.9rem; }
     th { background: #222; }
+    .form-group { margin-bottom: 14px; }
+    label { display: block; font-size: 0.85rem; margin-bottom: 5px; color: #aaa; }
+    input, select, textarea { width: 100%; padding: 10px; background: #222; border: 1px solid var(--border); color: #fff; border-radius: 6px; }
+    .btn { background: var(--red); color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    .product-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-top: 20px; }
+    .product-item { background: #222; border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+    .product-item img { width: 100%; height: 140px; object-fit: cover; border-radius: 4px; margin-bottom: 8px; }
   </style>
 </head>
 <body>
-  <h1>MonRex Artworks - Orders Panel</h1>
-  <button onclick="loadOrders()" style="background:#d32f2f; color:#fff; border:none; padding:10px 15px; cursor:pointer;">Refresh Orders</button>
-  <table>
-    <thead>
-      <tr>
-        <th>Time</th>
-        <th>Customer</th>
-        <th>Phone</th>
-        <th>Location</th>
-        <th>Items</th>
-        <th>Total</th>
-      </tr>
-    </thead>
-    <tbody id="ordersTable"></tbody>
-  </table>
+
+  <!-- Admin PIN Overlay -->
+  <div id="pinOverlay" style="position: fixed; inset: 0; background: rgba(0,0,0,0.92); display: flex; justify-content: center; align-items: center; z-index: 1000;">
+    <div style="background: var(--card); padding: 30px; border-radius: 10px; max-width: 350px; width: 90%; text-align: center; border: 1px solid var(--red);">
+      <h2>Admin Access</h2>
+      <p style="color: #aaa; margin: 10px 0 20px;">Enter your Admin PIN to manage products & orders</p>
+      <input type="password" id="adminPin" placeholder="Default: 1234" style="text-align: center; font-size: 1.2rem; margin-bottom: 15px;">
+      <button class="btn" style="width: 100%;" onclick="verifyPin()">Login to Admin</button>
+    </div>
+  </div>
+
+  <header>
+    <h1>Mon<span>Rex</span> Control Center</h1>
+    <a href="/" target="_blank" style="color: #aaa; text-decoration: none;">View Live Shop ↗</a>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('ordersPanel', this)">📦 Customer Orders</button>
+    <button class="tab-btn" onclick="switchTab('productsPanel', this)">🛍️ Manage Products (Add / Edit)</button>
+  </div>
+
+  <!-- TAB 1: ORDERS PANEL -->
+  <section id="ordersPanel" class="panel" style="display: block;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <h3>All Store Orders</h3>
+      <button class="btn" onclick="loadOrders()">Refresh Orders</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Order Code</th>
+          <th>Customer</th>
+          <th>Location</th>
+          <th>Items</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="ordersTable"></tbody>
+    </table>
+  </section>
+
+  <!-- TAB 2: PRODUCTS CMS PANEL -->
+  <section id="productsPanel" class="panel">
+    <h3>Add New Product to Storefront</h3>
+    <form onsubmit="handleAddProduct(event)" style="max-width: 500px; margin-top: 15px;">
+      <div class="form-group">
+        <label>Product Name *</label>
+        <input type="text" id="prodName" required placeholder="e.g. Red Beaded Luxury Bag">
+      </div>
+      <div class="form-group">
+        <label>Price (GH₵) *</label>
+        <input type="number" step="0.01" id="prodPrice" required placeholder="300">
+      </div>
+      <div class="form-group">
+        <label>Category *</label>
+        <select id="prodCategory" required>
+          <option value="Handmade Beaded Bags">Handmade Beaded Bags</option>
+          <option value="Men's Beaded Bags">Men's Beaded Bags</option>
+          <option value="Handmade Home Décor">Handmade Home Décor</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="prodDesc" rows="2" placeholder="Describe the item craftsmanship..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Product Image (Upload File from Device) *</label>
+        <input type="file" id="prodImageFile" accept="image/*" required>
+      </div>
+      <button type="submit" class="btn">Publish Product to Store</button>
+    </form>
+
+    <hr style="border-color: var(--border); margin: 30px 0;">
+
+    <h3>Existing Products in Neon DB</h3>
+    <div id="adminProductList" class="product-list"></div>
+  </section>
 
   <script>
+    let currentPin = sessionStorage.getItem('monrex_pin') || '';
+
+    function verifyPin() {
+      const pin = document.getElementById('adminPin').value.trim();
+      if (!pin) return alert("Please enter PIN");
+      currentPin = pin;
+      sessionStorage.setItem('monrex_pin', pin);
+      document.getElementById('pinOverlay').style.display = 'none';
+      loadOrders();
+      loadAdminProducts();
+    }
+
+    if (currentPin) {
+      document.getElementById('pinOverlay').style.display = 'none';
+      window.onload = () => { loadOrders(); loadAdminProducts(); };
+    }
+
+    function switchTab(panelId, btn) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+      btn.classList.add('active');
+      document.getElementById(panelId).style.display = 'block';
+    }
+
+    // Orders Management
     async function loadOrders() {
-      const res = await fetch('/api/orders');
+      const res = await fetch(`/api/orders?pin=${currentPin}`);
       const data = await res.json();
+      if (!data.success) return alert("PIN verification failed");
+
       const tbody = document.getElementById('ordersTable');
       tbody.innerHTML = data.orders.map(o => `
         <tr>
-          <td>${o.createdAt}</td>
-          <td>${o.customerName}</td>
-          <td>${o.phone}</td>
-          <td>${o.town}, ${o.region} (Delivery: GH₵${o.deliveryFee})</td>
-          <td>${o.items.map(i => `${i.name} (x${i.quantity})`).join(', ')}</td>
-          <td>GH₵ ${o.totalAmount.toFixed(2)}</td>
+          <td><strong>#${o.order_code}</strong></td>
+          <td>${o.customer_name}<br><small style="color:#aaa;">${o.phone}</small></td>
+          <td>${o.town}, ${o.region}<br><small style="color:#aaa;">Delivery: GH₵${o.delivery_fee}</small></td>
+          <td>${(typeof o.items === 'string' ? JSON.parse(o.items) : o.items).map(i => `${i.name} (x${i.quantity})`).join('<br>')}</td>
+          <td><strong>GH₵ ${Number(o.total_amount).toFixed(2)}</strong></td>
+          <td>
+            <select onchange="updateStatus(${o.id}, this.value)" style="padding:4px; font-size:0.8rem;">
+              <option ${o.status === 'Pending Payment' ? 'selected' : ''}>Pending Payment</option>
+              <option ${o.status === 'In Production' ? 'selected' : ''}>In Production</option>
+              <option ${o.status === 'Out for Delivery' ? 'selected' : ''}>Out for Delivery</option>
+              <option ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+            </select>
+          </td>
+          <td>
+            <a href="https://wa.me/233${o.phone.startsWith('0') ? o.phone.substring(1) : o.phone}" target="_blank" style="color:var(--red); font-weight:bold; text-decoration:none;">WhatsApp</a>
+          </td>
         </tr>
       `).join('');
     }
-    loadOrders();
+
+    async function updateStatus(orderId, newStatus) {
+      await fetch(`/api/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus, pin: currentPin })
+      });
+      alert(`Order updated to: ${newStatus}`);
+    }
+
+    // Products Management
+    async function loadAdminProducts() {
+      const res = await fetch('/api/products');
+      const data = await res.json();
+      const list = document.getElementById('adminProductList');
+
+      list.innerHTML = data.products.map(p => `
+        <div class="product-item">
+          <img src="${p.image_url || 'https://via.placeholder.com/150'}">
+          <h4>${p.name}</h4>
+          <p style="color:var(--red); font-weight:bold; margin:4px 0;">GH₵ ${Number(p.price).toFixed(2)}</p>
+          <p style="font-size:0.75rem; color:#aaa;">${p.category}</p>
+          <div style="margin-top:10px; display:flex; justify-content:space-between;">
+            <button onclick="toggleStock(${p.id}, ${!p.in_stock})" style="padding:4px 8px; font-size:0.75rem; background:#444; color:#fff; border:none; cursor:pointer;">
+              ${p.in_stock ? 'Set Out of Stock' : 'Set In Stock'}
+            </button>
+            <button onclick="deleteProduct(${p.id})" style="padding:4px 8px; font-size:0.75rem; background:var(--red); color:#fff; border:none; cursor:pointer;">
+              Delete
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function handleAddProduct(e) {
+      e.preventDefault();
+      const name = document.getElementById('prodName').value;
+      const price = document.getElementById('prodPrice').value;
+      const category = document.getElementById('prodCategory').value;
+      const description = document.getElementById('prodDesc').value;
+      const fileInput = document.getElementById('prodImageFile');
+
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const image_url = reader.result; // Base64 data URL
+
+        const res = await fetch('/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, price, category, description, image_url, pin: currentPin })
+        });
+
+        const result = await res.json();
+        if (result.success) {
+          alert('Product published successfully!');
+          e.target.reset();
+          loadAdminProducts();
+        } else {
+          alert('Error: ' + result.message);
+        }
+      };
+      reader.readAsDataURL(fileInput.files[0]);
+    }
+
+    async function toggleStock(id, in_stock) {
+      await fetch(`/api/products/${id}/stock`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ in_stock, pin: currentPin })
+      });
+      loadAdminProducts();
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm("Are you sure you want to remove this product?")) return;
+      await fetch(`/api/products/${id}?pin=${currentPin}`, { method: 'DELETE' });
+      loadAdminProducts();
+    }
   </script>
 </body>
 </html>
