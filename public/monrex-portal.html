@@ -3,22 +3,527 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin | MonRex Artworks</title>
+  <title>Admin Portal | MonRex Artworks</title>
   <style>
-    :root{--bg:#0f0f0f;--card:#181818;--red:#d32f2f;--text:#fff;--border:#2e2e2e;}
-    *{box-sizing:border-box;margin:0;padding:0;font-family:sans-serif;}
-    body{background:var(--bg);color:var(--text);padding:20px;}
-    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:15px;}
-    h1 span{color:var(--red);}
-    .tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
-    .tab-btn{background:var(--card);color:#fff;border:1px solid var(--border);padding:8px 16px;border-radius:6px;cursor:pointer;font-size:0.9rem;}
-    .tab-btn.active{background:var(--red);border-color:var(--red);}
-    .panel{display:none;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;}
-    table{width:100%;border-collapse:collapse;margin-top:15px;}
-    th,td{padding:10px;border:1px solid var(--border);text-align:left;font-size:0.85rem;}
-    th{background:#222;}
-    .fg{margin-bottom:12px;}
-    label{display:block;font-size:0.85rem;margin-bottom:4px;color:#aaa;}
-    input,select,textarea{width:100%;padding:10px;background:#222;border:1px solid var(--border);color:#fff;border-radius:6px;}
-    .btn{background:var(--red);color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:bold;}
+    :root {
+      --bg: #0f0f0f;
+      --card: #181818;
+      --card-elevated: #222222;
+      --red: #d32f2f;
+      --red-hover: #b71c1c;
+      --text: #ffffff;
+      --text-muted: #aaaaaa;
+      --border: #2e2e2e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 20px; line-height: 1.5; }
     
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 15px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    h1 span { color: var(--red); }
+    
+    .tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+    .tab-btn {
+      background: var(--card);
+      color: #fff;
+      border: 1px solid var(--border);
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+    .tab-btn:hover { border-color: var(--red); }
+    .tab-btn.active { background: var(--red); border-color: var(--red); }
+    
+    .panel { display: none; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 22px; }
+    
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { padding: 12px 10px; border: 1px solid var(--border); text-align: left; font-size: 0.85rem; vertical-align: middle; }
+    th { background: #202020; font-weight: 600; }
+    tr:hover { background: #1f1f1f; }
+    
+    .fg { margin-bottom: 14px; }
+    label { display: block; font-size: 0.85rem; margin-bottom: 5px; color: var(--text-muted); font-weight: 500; }
+    input, select, textarea {
+      width: 100%;
+      padding: 11px;
+      background: var(--card-elevated);
+      border: 1px solid var(--border);
+      color: #fff;
+      border-radius: 6px;
+      font-size: 0.92rem;
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--red); }
+    
+    .btn {
+      background: var(--red);
+      color: #fff;
+      border: none;
+      padding: 9px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: var(--red-hover); }
+    .btn-sm { padding: 5px 12px; font-size: 0.78rem; }
+    .btn-secondary { background: #333333; color: #fff; border: 1px solid #444; }
+    .btn-secondary:hover { background: #444444; }
+    
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-top: 20px; }
+    .item { background: var(--card-elevated); border: 1px solid var(--border); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; }
+    .item img { width: 100%; height: 140px; object-fit: cover; border-radius: 4px; margin-bottom: 8px; background: #111; }
+    
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .login-box {
+      background: var(--card);
+      padding: 30px;
+      border-radius: 10px;
+      max-width: 360px;
+      width: 90%;
+      text-align: center;
+      border: 1px solid var(--red);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Admin PIN Login Overlay -->
+  <div id="pinOverlay" class="overlay">
+    <div class="login-box">
+      <h2 style="margin-bottom: 8px;">Mon<span>Rex</span> Admin</h2>
+      <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 20px;">Enter your Admin PIN to access the manager</p>
+      <input type="password" id="adminPinInput" placeholder="Enter PIN" style="text-align: center; font-size: 1.2rem; letter-spacing: 3px; margin-bottom: 15px;">
+      <button class="btn" style="width: 100%; padding: 12px;" onclick="verifyPin()">Unlock Dashboard</button>
+    </div>
+  </div>
+
+  <header>
+    <div>
+      <h1>Mon<span>Rex</span> Control Portal</h1>
+      <p style="color: var(--text-muted); font-size: 0.8rem;">Storefront & Orders Management</p>
+    </div>
+    <a href="/" target="_blank" class="btn btn-secondary" style="text-decoration: none;">View Live Shop ↗</a>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('ordersP', this)">📦 Customer Orders</button>
+    <button class="tab-btn" onclick="switchTab('productsP', this)">🛍️ Products Manager</button>
+    <button class="tab-btn" onclick="switchTab('categoriesP', this)">📂 Categories</button>
+    <button class="tab-btn" onclick="switchTab('settingsP', this)">⚙️ Store Texts & Keys</button>
+  </div>
+
+  <!-- TAB 1: ORDERS -->
+  <section id="ordersP" class="panel" style="display: block;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+      <h3>All Store Orders</h3>
+      <button class="btn btn-sm" onclick="loadOrders()">🔄 Refresh</button>
+    </div>
+    <div style="overflow-x: auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Customer</th>
+            <th>Delivery Location</th>
+            <th>Items Ordered</th>
+            <th>Total</th>
+            <th>Payment</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="ordersT">
+          <tr><td colspan="7" style="text-align: center; color: #777;">Loading orders...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- TAB 2: PRODUCTS -->
+  <section id="productsP" class="panel">
+    <h3 id="formTitle">Add New Product</h3>
+    <form onsubmit="handleSaveProduct(event)" style="max-width: 550px; margin-top: 15px;">
+      <input type="hidden" id="editProdId" value="">
+      
+      <div class="fg">
+        <label>Product Name *</label>
+        <input type="text" id="pName" required placeholder="e.g. Luxury Beaded Tote Bag">
+      </div>
+
+      <div class="fg">
+        <label>Price (GH₵) *</label>
+        <input type="number" step="0.01" id="pPrice" required placeholder="300.00">
+      </div>
+
+      <div class="fg">
+        <label>Category *</label>
+        <select id="pCategory" required></select>
+      </div>
+
+      <div class="fg">
+        <label>Description</label>
+        <textarea id="pDesc" rows="3" placeholder="Handcrafted detail, bead material, dimensions..."></textarea>
+      </div>
+
+      <div class="fg">
+        <label>Product Image (Upload Photo from Device)</label>
+        <input type="file" id="pImageFile" accept="image/*">
+        <input type="text" id="pImageUrl" placeholder="Or paste image URL" style="margin-top: 8px;">
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 15px;">
+        <button type="submit" class="btn" id="pSubmitBtn">Publish Product</button>
+        <button type="button" class="btn btn-secondary" onclick="clearProductForm()">Clear / New</button>
+      </div>
+    </form>
+
+    <hr style="border-color: var(--border); margin: 30px 0;">
+    <h3>Existing Products</h3>
+    <div id="prodList" class="grid"></div>
+  </section>
+
+  <!-- TAB 3: CATEGORIES -->
+  <section id="categoriesP" class="panel">
+    <h3>Manage Categories</h3>
+    <form onsubmit="handleSaveCategory(event)" style="display: flex; gap: 10px; margin: 15px 0 25px; max-width: 450px;">
+      <input type="hidden" id="editCatId" value="">
+      <input type="text" id="catName" placeholder="Category Name" required style="flex-grow: 1;">
+      <button type="submit" class="btn" id="catSubmitBtn">Add Category</button>
+    </form>
+    <div id="catList" style="max-width: 500px;"></div>
+  </section>
+
+  <!-- TAB 4: SETTINGS -->
+  <section id="settingsP" class="panel">
+    <h3>Storefront Settings (Live Website Texts)</h3>
+    <div style="max-width: 550px; margin-top: 15px;">
+      <div class="fg">
+        <label>Top Announcement Bar Message</label>
+        <input type="text" id="sAnnouncement">
+      </div>
+      <div class="fg">
+        <label>Hero Title</label>
+        <input type="text" id="sHeroTitle">
+      </div>
+      <div class="fg">
+        <label>Hero Subtitle</label>
+        <textarea id="sHeroSub" rows="2"></textarea>
+      </div>
+      <div class="fg">
+        <label>About Us Story</label>
+        <textarea id="sAbout" rows="4"></textarea>
+      </div>
+      <div class="fg">
+        <label>Paystack Public Key</label>
+        <input type="text" id="sPaystackKey" placeholder="pk_live_xxxx... or pk_test_xxxx...">
+      </div>
+      <button class="btn" onclick="saveSettings()">Save All Changes</button>
+    </div>
+  </section>
+
+  <script>
+    let pin = sessionStorage.getItem('mr_portal_pin') || '';
+
+    function verifyPin() {
+      const input = document.getElementById('adminPinInput').value.trim();
+      if (!input) return alert("Please enter your PIN");
+      pin = input;
+      sessionStorage.setItem('mr_portal_pin', pin);
+      document.getElementById('pinOverlay').style.display = 'none';
+      loadAll();
+    }
+
+    if (pin) {
+      document.getElementById('pinOverlay').style.display = 'none';
+      window.onload = loadAll;
+    }
+
+    function switchTab(id, btn) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+      btn.classList.add('active');
+      document.getElementById(id).style.display = 'block';
+    }
+
+    function loadAll() {
+      loadOrders();
+      loadProducts();
+      loadCategories();
+      loadSettings();
+    }
+
+    // ===== 1. ORDERS LOGIC =====
+    async function loadOrders() {
+      try {
+        const r = await fetch('/api/orders?pin=' + encodeURIComponent(pin));
+        const d = await r.json();
+        if (!d.success) {
+          alert('Access Denied: ' + (d.message || 'Incorrect PIN'));
+          sessionStorage.removeItem('mr_portal_pin');
+          document.getElementById('pinOverlay').style.display = 'flex';
+          return;
+        }
+
+        const tbody = document.getElementById('ordersT');
+        if (!d.orders || d.orders.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #777;">No orders received yet.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = d.orders.map(o => {
+          const items = typeof o.items === 'string' ? JSON.parse(o.items) : (o.items || []);
+          const phoneClean = (o.phone || '').replace(/[^0-9]/g, '');
+          const waLink = 'https://wa.me/233' + (phoneClean.startsWith('0') ? phoneClean.substring(1) : phoneClean);
+
+          return '<tr>' +
+            '<td><strong>#' + o.order_code + '</strong><br><small style="color:#777;">' + new Date(o.created_at).toLocaleDateString() + '</small></td>' +
+            '<td><strong>' + o.customer_name + '</strong><br><a href="' + waLink + '" target="_blank" style="color:var(--red); text-decoration:none; font-size:0.8rem;">📱 ' + o.phone + '</a></td>' +
+            '<td>' + o.town + ', ' + o.region + '<br><small style="color:#aaa;">Fee: GH₵' + Number(o.delivery_fee).toFixed(2) + '</small></td>' +
+            '<td>' + items.map(i => '• ' + i.name + ' (x' + i.quantity + ')').join('<br>') + '</td>' +
+            '<td><strong style="color:#fff;">GH₵ ' + Number(o.total_amount).toFixed(2) + '</strong></td>' +
+            '<td><span style="font-size:0.8rem; background:#333; padding:3px 8px; border-radius:4px;">' + (o.payment_method || 'MoMo') + '</span></td>' +
+            '<td>' +
+              '<select onchange="updateStatus(' + o.id + ', this.value)" style="font-size:0.78rem; padding:4px;">' +
+                '<option ' + (o.status === 'Pending Payment' ? 'selected' : '') + '>Pending Payment</option>' +
+                '<option ' + (o.status === 'In Production' ? 'selected' : '') + '>In Production</option>' +
+                '<option ' + (o.status === 'Out for Delivery' ? 'selected' : '') + '>Out for Delivery</option>' +
+                '<option ' + (o.status === 'Delivered' ? 'selected' : '') + '>Delivered</option>' +
+              '</select>' +
+            '</td>' +
+          '</tr>';
+        }).join('');
+      } catch (err) {
+        console.error("Order load error:", err);
+      }
+    }
+
+    async function updateStatus(id, newStatus) {
+      await fetch('/api/orders/' + id + '/status', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus, pin })
+      });
+      alert('Order status updated to: ' + newStatus);
+    }
+
+    // ===== 2. PRODUCTS LOGIC =====
+    async function loadProducts() {
+      try {
+        const r = await fetch('/api/products');
+        const d = await r.json();
+        const list = document.getElementById('prodList');
+        if (!d.products || d.products.length === 0) {
+          list.innerHTML = '<p style="color:#777; grid-column:1/-1;">No products found.</p>';
+          return;
+        }
+
+        list.innerHTML = d.products.map(p => {
+          const pStr = JSON.stringify(p).replace(/'/g, "&apos;");
+          return '<div class="item">' +
+            '<img src="' + (p.image_url || 'https://via.placeholder.com/200') + '">' +
+            '<h4 style="font-size:0.95rem; margin-top:4px;">' + p.name + '</h4>' +
+            '<p style="color:var(--red); font-weight:bold; margin:3px 0;">GH₵ ' + Number(p.price).toFixed(2) + '</p>' +
+            '<p style="font-size:0.75rem; color:#aaa;">' + p.category + '</p>' +
+            '<div style="margin-top:10px; display:flex; gap:6px; flex-wrap:wrap;">' +
+              '<button class="btn btn-sm" onclick=\'editProduct(' + pStr + ')\'>Edit</button>' +
+              '<button class="btn btn-sm btn-secondary" onclick="toggleStock(' + p.id + ', ' + (!p.in_stock) + ')">' + (p.in_stock ? 'Set Out of Stock' : 'Set In Stock') + '</button>' +
+              '<button class="btn btn-sm" style="background:#555;" onclick="deleteProduct(' + p.id + ')">Delete</button>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function editProduct(p) {
+      document.getElementById('editProdId').value = p.id;
+      document.getElementById('pName').value = p.name;
+      document.getElementById('pPrice').value = p.price;
+      document.getElementById('pCategory').value = p.category;
+      document.getElementById('pDesc').value = p.description || '';
+      document.getElementById('pImageUrl').value = p.image_url || '';
+      document.getElementById('formTitle').textContent = 'Edit Product: ' + p.name;
+      document.getElementById('pSubmitBtn').textContent = 'Update Product';
+      document.getElementById('productsP').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function clearProductForm() {
+      document.getElementById('editProdId').value = '';
+      document.getElementById('pName').value = '';
+      document.getElementById('pPrice').value = '';
+      document.getElementById('pDesc').value = '';
+      document.getElementById('pImageUrl').value = '';
+      document.getElementById('pImageFile').value = '';
+      document.getElementById('formTitle').textContent = 'Add New Product';
+      document.getElementById('pSubmitBtn').textContent = 'Publish Product';
+    }
+
+    async function handleSaveProduct(e) {
+      e.preventDefault();
+      const id = document.getElementById('editProdId').value;
+      const name = document.getElementById('pName').value;
+      const price = document.getElementById('pPrice').value;
+      const category = document.getElementById('pCategory').value;
+      const description = document.getElementById('pDesc').value;
+      const fileInput = document.getElementById('pImageFile');
+      const urlInput = document.getElementById('pImageUrl').value;
+
+      const save = async (image_url) => {
+        const body = { name, price, category, description, image_url, pin };
+        const url = id ? '/api/products/' + id : '/api/products';
+        const method = id ? 'PUT' : 'POST';
+
+        const r = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const d = await r.json();
+
+        if (d.success) {
+          alert(id ? 'Product updated successfully!' : 'Product added successfully!');
+          clearProductForm();
+          loadProducts();
+        } else {
+          alert('Error: ' + (d.message || d.error));
+        }
+      };
+
+      if (fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = () => save(reader.result);
+        reader.readAsDataURL(fileInput.files[0]);
+      } else {
+        save(urlInput || '');
+      }
+    }
+
+    async function toggleStock(id, in_stock) {
+      await fetch('/api/products/' + id + '/stock', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ in_stock, pin })
+      });
+      loadProducts();
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm('Are you sure you want to delete this product?')) return;
+      await fetch('/api/products/' + id + '?pin=' + encodeURIComponent(pin), { method: 'DELETE' });
+      loadProducts();
+    }
+
+    // ===== 3. CATEGORIES LOGIC =====
+    async function loadCategories() {
+      try {
+        const r = await fetch('/api/categories');
+        const d = await r.json();
+        
+        const sel = document.getElementById('pCategory');
+        sel.innerHTML = d.categories.map(c => '<option value="' + c.name + '">' + c.name + '</option>').join('');
+
+        const list = document.getElementById('catList');
+        list.innerHTML = d.categories.map(c => 
+          '<div style="display:flex; justify-content:space-between; align-items:center; background:#222; padding:10px 14px; border-radius:6px; margin-bottom:8px;">' +
+            '<span>' + c.name + '</span>' +
+            '<div style="display:flex; gap:6px;">' +
+              '<button class="btn btn-sm btn-secondary" onclick="editCat(' + c.id + ',\'' + c.name.replace(/'/g, "\\'") + '\')">Edit</button>' +
+              '<button class="btn btn-sm" style="background:#555;" onclick="deleteCat(' + c.id + ')">Delete</button>' +
+            '</div>' +
+          '</div>'
+        ).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function editCat(id, name) {
+      document.getElementById('editCatId').value = id;
+      document.getElementById('catName').value = name;
+      document.getElementById('catSubmitBtn').textContent = 'Update';
+    }
+
+    async function handleSaveCategory(e) {
+      e.preventDefault();
+      const id = document.getElementById('editCatId').value;
+      const name = document.getElementById('catName').value;
+      const url = id ? '/api/categories/' + id : '/api/categories';
+      const method = id ? 'PUT' : 'POST';
+
+      await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, pin })
+      });
+
+      document.getElementById('editCatId').value = '';
+      document.getElementById('catName').value = '';
+      document.getElementById('catSubmitBtn').textContent = 'Add Category';
+      loadCategories();
+      loadProducts();
+    }
+
+    async function deleteCat(id) {
+      if (!confirm('Delete this category?')) return;
+      await fetch('/api/categories/' + id + '?pin=' + encodeURIComponent(pin), { method: 'DELETE' });
+      loadCategories();
+      loadProducts();
+    }
+
+    // ===== 4. SETTINGS LOGIC =====
+    async function loadSettings() {
+      try {
+        const r = await fetch('/api/settings');
+        const d = await r.json();
+        if (d.success && d.settings) {
+          document.getElementById('sAnnouncement').value = d.settings.announcement || '';
+          document.getElementById('sHeroTitle').value = d.settings.hero_title || '';
+          document.getElementById('sHeroSub').value = d.settings.hero_subtitle || '';
+          document.getElementById('sAbout').value = d.settings.about_text || '';
+          document.getElementById('sPaystackKey').value = d.settings.paystack_public_key || '';
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function saveSettings() {
+      const fields = [
+        ['announcement', document.getElementById('sAnnouncement').value],
+        ['hero_title', document.getElementById('sHeroTitle').value],
+        ['hero_subtitle', document.getElementById('sHeroSub').value],
+        ['about_text', document.getElementById('sAbout').value],
+        ['paystack_public_key', document.getElementById('sPaystackKey').value]
+      ];
+
+      for (const [key, value] of fields) {
+        await fetch('/api/settings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key, value, pin })
+        });
+      }
+      alert('All Store Settings saved successfully! Changes are live on your shop.');
+    }
+  </script>
+</body>
+</html>
