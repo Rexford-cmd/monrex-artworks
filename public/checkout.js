@@ -1,29 +1,93 @@
 const DELIVERY_RATES = {
   "Greater Accra": {
-    "Ashaiman": 10.00, "Tema": 15.00, "Accra Central / Osu": 20.00,
-    "East Legon / Adjiringanor": 20.00, "Madina / Adenta": 20.00,
-    "Spintex / Teshie / Nungua": 18.00, "Dansoman / Kaneshie": 22.00,
-    "Kasoa / Weija": 30.00, "Prampram / Dodowa": 25.00
+    "Ashaiman (Studio Pickup)": 0.00,
+    "Ashaiman (Doorstep)": 15.00,
+    "Tema (Comm 1-25, Kpone, Manhean)": 20.00,
+    "Accra Central (Osu, Ring Road, Ridge)": 25.00,
+    "East Legon / Adjiringanor / Airport": 25.00,
+    "Madina / Adenta / Abokobi / Oyarifa": 25.00,
+    "Spintex / Teshie / Nungua / Sakumono": 22.00,
+    "Dansoman / Kaneshie / Lapaz / Achimota": 28.00,
+    "Kasoa / Weija / Gbawe / Bortianor": 35.00,
+    "Prampram / Dawhenya / Dodowa": 30.00
   },
   "Ashanti": {
-    "Kumasi Central": 40.00, "Obuasi / Konongo": 45.00,
-    "Ejisu / Mampong": 45.00, "Bekwai / Offinso": 50.00
+    "Kumasi Central (Adum, Bantama, Kejetia, KNUST)": 40.00,
+    "Kumasi Suburbs (Ejisu, Suame, Tafo, Kwadaso)": 42.00,
+    "Obuasi / Dunkwa / Bekwai": 48.00,
+    "Konongo / Juaso / Agogo": 45.00,
+    "Mampong / Effiduase / Ejura": 50.00
   },
   "Western": {
-    "Takoradi / Sekondi": 40.00, "Tarkwa / Prestea": 50.00, "Sefwi Wiawso / Bibiani": 55.00
+    "Takoradi / Sekondi / Effia": 42.00,
+    "Tarkwa / Prestea / Bogoso": 50.00,
+    "Axim / Agona Nkwanta / Elubo": 55.00,
+    "Shama / Ahanta / Agona": 45.00
   },
   "Central": {
-    "Cape Coast / Elmina": 35.00, "Winneba / Kasoa": 30.00, "Mankessim / Swedru": 35.00
+    "Cape Coast / Elmina / UCC": 38.00,
+    "Winneba / Senya Beraku / Gomoa": 32.00,
+    "Mankessim / Saltpond / Anomabo": 38.00,
+    "Agona Swedru / Nyakrom": 36.00,
+    "Dunkwa-on-Offin / Twifo Praso": 48.00
   },
   "Eastern": {
-    "Koforidua / New Juaben": 30.00, "Nkawkaw / Mpraeso": 35.00, "Akosombo / Somanya": 30.00
+    "Koforidua / New Juaben / Oyoko": 32.00,
+    "Akosombo / Atimpoku / Somanya / Krobo": 30.00,
+    "Nkawkaw / Mpraeso / Kwahu / Abetifi": 40.00,
+    "Suhum / Nsawam / Asamankese": 30.00,
+    "Akim Oda / Kade / Akwatia": 40.00
   },
   "Volta": {
-    "Ho / Sokode": 45.00, "Hohoe / Kpando": 50.00, "Aflao / Keta": 45.00
+    "Ho / Sokode / Adaklu": 42.00,
+    "Hohoe / Kpando / Golokwati": 48.00,
+    "Aflao / Denu / Keta / Anloga": 45.00,
+    "Sogakope / Akatsi / Battor": 38.00
   },
-  "Northern & Upper Regions": {
-    "Tamale": 60.00, "Sunyani (Bono)": 45.00, "Techiman (Bono East)": 45.00,
-    "Bolgatanga": 70.00, "Wa": 70.00, "Damongo": 65.00
+  "Oti": {
+    "Dambai / Nkwanta / Jasikan": 55.00,
+    "Kadjebi / Kete Krachi / Nkonya": 58.00
+  },
+  "Northern": {
+    "Tamale Central (Gumani, Lamashegu, UDS)": 60.00,
+    "Savelugu / Nanton / Tolon / Kumbungu": 62.00,
+    "Yendi / Gushegu / Karaga / Bimbilla": 68.00
+  },
+  "Savannah": {
+    "Damongo / Bole / Sawla / Larabanga": 65.00,
+    "Salaga / Kpembe / Buipe": 68.00
+  },
+  "North East": {
+    "Nalerigu / Gambaga / Walewale": 68.00,
+    "Bunkpurugu / Chereponi / Yunyoo": 72.00
+  },
+  "Upper East": {
+    "Bolgatanga / Zuarungu / Bongo": 70.00,
+    "Navrongo / Paga / Sirigu": 72.00,
+    "Bawku / Zebilla / Garu / Pusiga": 75.00
+  },
+  "Upper West": {
+    "Wa Central / UDS Campus": 70.00,
+    "Lawra / Nandom / Jirapa / Tumu": 75.00,
+    "Nadowli / Kaleo / Daffiama": 72.00
+  },
+  "Bono": {
+    "Sunyani Central / Fiapre / Abesim": 45.00,
+    "Berekum / Dormaa Ahenkro / Drobo": 50.00,
+    "Wenchi / Sampa / Nsawkaw": 52.00
+  },
+  "Bono East": {
+    "Techiman Central / Tuobodom": 45.00,
+    "Kintampo / Atebubu / Prang / Yeji": 52.00,
+    "Nkoranza / Kwame Danso": 50.00
+  },
+  "Ahafo": {
+    "Goaso / Mim / Kenyasi": 50.00,
+    "Bechem / Duayaw Nkwanta": 48.00
+  },
+  "Western North": {
+    "Sefwi Wiawso / Sefwi Bekwai / Bibiani": 55.00,
+    "Juaboso / Bodi / Essam / Dadieso": 58.00
   }
 };
 
@@ -48,12 +112,21 @@ document.addEventListener("DOMContentLoaded", () => {
   renderProducts(allProducts);
   initRegionDropdown();
   updateCartBadge();
-  
-  // Async fetches
   loadSettings();
   loadCategories();
   fetchProducts();
 });
+
+function selectPayMethod(method) {
+  document.getElementById('selectedPaymentMethod').value = method;
+  document.getElementById('btnPaystack').classList.remove('active');
+  document.getElementById('btnMomo').classList.remove('active');
+  if (method === 'paystack') {
+    document.getElementById('btnPaystack').classList.add('active');
+  } else {
+    document.getElementById('btnMomo').classList.add('active');
+  }
+}
 
 async function loadSettings() {
   try {
@@ -66,7 +139,7 @@ async function loadSettings() {
       if (d.settings.about_text) document.getElementById('aboutText').textContent = d.settings.about_text;
       if (d.settings.paystack_public_key) paystackPublicKey = d.settings.paystack_public_key;
     }
-  } catch(e) { console.log("Settings loaded from defaults."); }
+  } catch(e) {}
 }
 
 async function loadCategories() {
@@ -83,8 +156,8 @@ async function loadCategories() {
 function renderCategoryFilters() {
   const el = document.getElementById('categoryFilters');
   if (!el) return;
-  el.innerHTML = `<button class="filter-btn active" onclick="filterCategory('All',this)">All Items</button>` +
-    allCategories.map(c => `<button class="filter-btn" onclick="filterCategory('${c}',this)">${c}</button>`).join('');
+  el.innerHTML = '<button class="filter-btn active" onclick="filterCategory(\'All\',this)">All Items</button>' +
+    allCategories.map(c => '<button class="filter-btn" onclick="filterCategory(\'' + c + '\',this)">' + c + '</button>').join('');
 }
 
 async function fetchProducts() {
@@ -95,7 +168,7 @@ async function fetchProducts() {
       allProducts = d.products;
       renderProducts(allProducts);
     }
-  } catch(e) { console.log("Using default product catalog."); }
+  } catch(e) {}
 }
 
 function renderProducts(products) {
@@ -105,26 +178,24 @@ function renderProducts(products) {
     grid.innerHTML = '<p style="text-align:center;grid-column:1/-1;color:#777;">No products available.</p>';
     return;
   }
-  grid.innerHTML = products.map(p => `
-    <div class="product-card">
-      <img src="${p.image_url || 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=500'}" class="product-image" alt="${p.name}">
-      <div class="product-info">
-        <div>
-          <span class="product-category">${p.category}</span>
-          <h4 class="product-title">${p.name}</h4>
-          <p class="product-desc">${p.description || ''}</p>
-        </div>
-        <div>
-          <div class="product-price">GH₵ ${Number(p.price).toFixed(2)}</div>
-          ${p.in_stock !== false ? `
-            <button class="btn-primary" style="width:100%" onclick="addToCart('${p.id}', '${p.name.replace(/'/g, "\\'")}', ${p.price})">Add to Order</button>
-          ` : `
-            <button class="btn-secondary" style="width:100%" disabled>Out of Stock</button>
-          `}
-        </div>
-      </div>
-    </div>
-  `).join('');
+  grid.innerHTML = products.map(p =>
+    '<div class="product-card">' +
+      '<img src="' + (p.image_url || 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=500') + '" class="product-image" alt="' + p.name + '">' +
+      '<div class="product-info">' +
+        '<div>' +
+          '<span class="product-category">' + p.category + '</span>' +
+          '<h4 class="product-title">' + p.name + '</h4>' +
+          '<p class="product-desc">' + (p.description || '') + '</p>' +
+        '</div>' +
+        '<div>' +
+          '<div class="product-price">GH₵ ' + Number(p.price).toFixed(2) + '</div>' +
+          (p.in_stock !== false
+            ? '<button class="btn-primary" style="width:100%" onclick="addToCart(\'' + p.id + '\',\'' + p.name.replace(/'/g, "\\'") + '\',' + p.price + ')">Add to Order</button>'
+            : '<button class="btn-secondary" style="width:100%" disabled>Out of Stock</button>') +
+        '</div>' +
+      '</div>' +
+    '</div>'
+  ).join('');
 }
 
 function filterCategory(cat, btn) {
@@ -152,14 +223,11 @@ function showSection(id) {
 
 function addToCart(id, name, price) {
   const existing = cart.find(i => i.id == id || i.name === name);
-  if (existing) {
-    existing.quantity += 1;
-  } else {
-    cart.push({ id, name, price: Number(price), quantity: 1 });
-  }
+  if (existing) { existing.quantity += 1; }
+  else { cart.push({ id, name, price: Number(price), quantity: 1 }); }
   localStorage.setItem('monrex_cart', JSON.stringify(cart));
   updateCartBadge();
-  alert(`Added "${name}" to your cart!`);
+  alert('Added "' + name + '" to your cart!');
 }
 
 function updateCartBadge() {
@@ -175,18 +243,15 @@ function renderCheckoutCart() {
     updateTotals();
     return;
   }
-  el.innerHTML = cart.map((item, idx) => `
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:#222; padding:10px; border-radius:6px;">
-      <div>
-        <strong>${item.name}</strong><br>
-        <small style="color:#aaa;">GH₵ ${Number(item.price).toFixed(2)} x ${item.quantity}</small>
-      </div>
-      <div>
-        <button onclick="changeQty(${idx}, 1)" style="padding:4px 10px; background:#333; color:#fff; border:none; border-radius:4px; cursor:pointer;">+</button>
-        <button onclick="changeQty(${idx}, -1)" style="padding:4px 10px; background:#333; color:#fff; border:none; border-radius:4px; cursor:pointer;">-</button>
-      </div>
-    </div>
-  `).join('');
+  el.innerHTML = cart.map((item, idx) =>
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;background:#222;padding:10px;border-radius:6px;">' +
+      '<div><strong>' + item.name + '</strong><br><small style="color:#aaa;">GH₵ ' + Number(item.price).toFixed(2) + ' x ' + item.quantity + '</small></div>' +
+      '<div>' +
+        '<button onclick="changeQty(' + idx + ',1)" style="padding:4px 10px;background:#333;color:#fff;border:none;border-radius:4px;cursor:pointer;">+</button> ' +
+        '<button onclick="changeQty(' + idx + ',-1)" style="padding:4px 10px;background:#333;color:#fff;border:none;border-radius:4px;cursor:pointer;">-</button>' +
+      '</div>' +
+    '</div>'
+  ).join('');
   updateTotals();
 }
 
@@ -202,7 +267,6 @@ function initRegionDropdown() {
   const rs = document.getElementById('regionSelect');
   const ts = document.getElementById('townSelect');
   if (!rs) return;
-
   rs.innerHTML = '<option value="">-- Choose Delivery Region --</option>';
   Object.keys(DELIVERY_RATES).forEach(r => {
     const o = document.createElement('option');
@@ -210,27 +274,20 @@ function initRegionDropdown() {
     o.textContent = r;
     rs.appendChild(o);
   });
-
   rs.addEventListener('change', e => {
     const region = e.target.value;
     ts.innerHTML = '<option value="">-- Choose Town / Area --</option>';
     selectedDeliveryFee = 0;
     updateTotals();
-
-    if (!region) {
-      ts.disabled = true;
-      return;
-    }
-
+    if (!region) { ts.disabled = true; return; }
     Object.keys(DELIVERY_RATES[region]).forEach(t => {
       const o = document.createElement('option');
       o.value = t;
-      o.textContent = `${t} (GH₵ ${DELIVERY_RATES[region][t].toFixed(2)})`;
+      o.textContent = t + ' (GH₵ ' + DELIVERY_RATES[region][t].toFixed(2) + ')';
       ts.appendChild(o);
     });
     ts.disabled = false;
   });
-
   ts.addEventListener('change', e => {
     const r = rs.value;
     const t = e.target.value;
@@ -246,14 +303,12 @@ function getSubtotal() {
 function updateTotals() {
   const sub = getSubtotal();
   const tot = sub + selectedDeliveryFee;
-
   const s = document.getElementById('subtotalDisplay');
   const d = document.getElementById('deliveryFeeDisplay');
   const t = document.getElementById('totalDisplay');
-
-  if (s) s.textContent = `GH₵ ${sub.toFixed(2)}`;
-  if (d) d.textContent = `GH₵ ${selectedDeliveryFee.toFixed(2)}`;
-  if (t) t.textContent = `GH₵ ${tot.toFixed(2)}`;
+  if (s) s.textContent = 'GH₵ ' + sub.toFixed(2);
+  if (d) d.textContent = 'GH₵ ' + selectedDeliveryFee.toFixed(2);
+  if (t) t.textContent = 'GH₵ ' + tot.toFixed(2);
 }
 
 async function handlePlaceOrder(event) {
@@ -265,23 +320,21 @@ async function handlePlaceOrder(event) {
   const email = document.getElementById('customerEmail').value.trim();
   const region = document.getElementById('regionSelect').value;
   const town = document.getElementById('townSelect').value;
-  const payMethod = document.querySelector('input[name="payMethod"]:checked').value;
+  const payMethod = document.getElementById('selectedPaymentMethod').value;
 
   if (!region || !town) return alert("Please select your delivery location.");
 
   const subtotal = getSubtotal();
   const total = subtotal + selectedDeliveryFee;
 
-  // Paystack checkout
   if (payMethod === 'paystack') {
-    if (!paystackPublicKey) {
-      alert("Paystack Public Key is not set in Admin Settings. Please choose 'Direct MoMo' or add your key in admin.");
+    if (!paystackPublicKey || paystackPublicKey.trim() === '') {
+      alert("Paystack is not configured yet. Please select 'Direct MoMo' or add your Paystack Public Key in Admin Settings.");
       return;
     }
-
     try {
       const handler = PaystackPop.setup({
-        key: paystackPublicKey,
+        key: paystackPublicKey.trim(),
         email: email,
         amount: Math.round(total * 100),
         currency: 'GHS',
@@ -289,34 +342,30 @@ async function handlePlaceOrder(event) {
         callback: async function(response) {
           await saveOrder(name, phone, email, region, town, total, 'Paystack', response.reference);
         },
-        onClose: function() {
-          alert("Payment cancelled.");
-        }
+        onClose: function() { alert("Payment window closed."); }
       });
       handler.openIframe();
-    } catch(err) {
-      alert("Paystack error: " + err.message);
-    }
+    } catch(err) { alert("Paystack error: " + err.message); }
     return;
   }
 
-  // Direct MoMo checkout
   await saveOrder(name, phone, email, region, town, total, 'Direct MoMo', '');
-  const itemsText = cart.map(i => `• ${i.name} (x${i.quantity})`).join('\n');
+  const itemsText = cart.map(i => '• ' + i.name + ' (x' + i.quantity + ') - GH₵' + (i.price * i.quantity).toFixed(2)).join('\n');
   const wa = encodeURIComponent(
-    `Hello MonRex Artworks! 🎨\nI want to confirm my order:\n\n` +
-    `*Name:* ${name}\n` +
-    `*Phone:* ${phone}\n` +
-    `*Location:* ${town}, ${region}\n\n` +
-    `*Items:*\n${itemsText}\n\n` +
-    `*Delivery Fee:* GH₵${selectedDeliveryFee.toFixed(2)}\n` +
-    `*Total:* GH₵${total.toFixed(2)}\n` +
-    `*Payment:* Direct MoMo (0507482090)`
+    'Hello MonRex Artworks! 🎨\nI want to confirm my order:\n\n' +
+    '*Name:* ' + name + '\n' +
+    '*Phone:* ' + phone + '\n' +
+    '*Location:* ' + town + ', ' + region + '\n\n' +
+    '*Items:*\n' + itemsText + '\n\n' +
+    '*Subtotal:* GH₵' + subtotal.toFixed(2) + '\n' +
+    '*Delivery Fee:* GH₵' + selectedDeliveryFee.toFixed(2) + '\n' +
+    '*Total:* GH₵' + total.toFixed(2) + '\n\n' +
+    '*Payment:* Direct MoMo (0507482090)'
   );
   cart = [];
   localStorage.removeItem('monrex_cart');
   updateCartBadge();
-  window.location.href = `https://wa.me/233507482090?text=${wa}`;
+  window.location.href = 'https://wa.me/233507482090?text=' + wa;
 }
 
 async function saveOrder(name, phone, email, region, town, total, method, ref) {
@@ -332,7 +381,7 @@ async function saveOrder(name, phone, email, region, town, total, method, ref) {
     });
     const d = await r.json();
     if (d.success) {
-      alert(`Order #${d.order.order_code} confirmed successfully!`);
+      alert('Order #' + d.order.order_code + ' confirmed successfully!');
       cart = [];
       localStorage.removeItem('monrex_cart');
       updateCartBadge();
@@ -340,35 +389,29 @@ async function saveOrder(name, phone, email, region, town, total, method, ref) {
       document.getElementById('trackInput').value = d.order.order_code;
       trackOrder();
     }
-  } catch(e) {
-    alert("Order saved. Contacting via WhatsApp...");
-  }
+  } catch(e) { alert("Order saved. Contacting via WhatsApp..."); }
 }
 
 async function trackOrder() {
   const q = document.getElementById('trackInput').value.trim();
   const el = document.getElementById('trackResult');
   if (!q) return alert("Enter your order code or phone number.");
-
   el.innerHTML = '<p style="color:#aaa;">Searching order records...</p>';
   try {
-    const r = await fetch(`/api/orders/track/${encodeURIComponent(q)}`);
+    const r = await fetch('/api/orders/track/' + encodeURIComponent(q));
     const d = await r.json();
-    if (!d.success) {
-      el.innerHTML = `<p style="color:var(--accent-red);">${d.message}</p>`;
-      return;
-    }
-    el.innerHTML = d.orders.map(o => `
-      <div style="background:#222; padding:15px; border-radius:8px; margin-bottom:12px; border-left:4px solid var(--accent-red);">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <h4>Order #${o.order_code}</h4>
-          <span class="status-badge">${o.status}</span>
-        </div>
-        <p style="font-size:0.88rem; color:#aaa; margin-top:5px;">Customer: <strong>${o.customer_name}</strong> | Location: <strong>${o.town}, ${o.region}</strong></p>
-        <p style="margin-top:8px;">Total: <strong>GH₵ ${Number(o.total_amount).toFixed(2)}</strong></p>
-      </div>
-    `).join('');
-  } catch(e) {
-    el.innerHTML = '<p style="color:var(--accent-red);">Error tracking order. Please try again.</p>';
-  }
+    if (!d.success) { el.innerHTML = '<p style="color:var(--accent-red);">' + d.message + '</p>'; return; }
+    el.innerHTML = d.orders.map(o => {
+      const sc = o.status.toLowerCase();
+      const cls = sc.includes('delivered') ? 'status-delivered' : sc.includes('delivery') ? 'status-delivery' : sc.includes('production') ? 'status-production' : 'status-pending';
+      return '<div style="background:#222;padding:15px;border-radius:8px;margin-bottom:12px;border-left:4px solid var(--accent-red);">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+          '<h4>Order #' + o.order_code + '</h4>' +
+          '<span class="status-badge ' + cls + '">' + o.status + '</span>' +
+        '</div>' +
+        '<p style="font-size:0.88rem;color:#aaa;margin-top:5px;">Customer: <strong>' + o.customer_name + '</strong> | Location: <strong>' + o.town + ', ' + o.region + '</strong></p>' +
+        '<p style="margin-top:8px;">Total: <strong>GH₵ ' + Number(o.total_amount).toFixed(2) + '</strong></p>' +
+      '</div>';
+    }).join('');
+  } catch(e) { el.innerHTML = '<p style="color:var(--accent-red);">Error tracking order. Please try again.</p>'; }
 }
