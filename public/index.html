@@ -3,17 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MonRex Artworks | Handmade Beaded Bags & Art</title>
+  <title>MonRex Artworks</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <div class="announcement-bar" id="announcementBar">Loading...</div>
 
-  <!-- Top Announcement -->
-  <div class="announcement-bar">
-    ✨ Handmade with passion • Unique designs • Ghana-wide delivery available 🇬🇭
-  </div>
-
-  <!-- Main Navigation Header -->
   <header class="header">
     <div class="logo-area" onclick="showSection('home')">
       <h1>Mon<span>Rex</span> Artworks</h1>
@@ -22,148 +17,99 @@
     <nav class="nav-links">
       <a href="javascript:void(0)" onclick="showSection('home')">Home</a>
       <a href="javascript:void(0)" onclick="showSection('products')">Products</a>
-      <a href="javascript:void(0)" onclick="showSection('about')">About Us</a>
+      <a href="javascript:void(0)" onclick="showSection('about')">About</a>
       <a href="javascript:void(0)" onclick="showSection('track')">Track Order</a>
-      <a href="javascript:void(0)" onclick="showSection('checkout')" class="cart-btn">
-        🛒 Cart (<span id="cartCount">0</span>)
-      </a>
+      <a href="javascript:void(0)" onclick="showSection('checkout')" class="cart-btn">🛒 Cart (<span id="cartCount">0</span>)</a>
     </nav>
   </header>
 
-  <!-- ================= SECTION 1: HOME & HERO ================= -->
   <main id="homeSection">
     <section class="hero">
-      <h2>Handcrafted Elegance & Modern Beadwork</h2>
-      <p>
-        MonRex Artworks is a creative handmade brand focused on unique beadwork, handcrafted bags, and artistic décor in <strong>Ashaiman</strong>.
-      </p>
-      <div style="margin-top: 20px;">
+      <h2 id="heroTitle">Loading...</h2>
+      <p id="heroSubtitle">Loading...</p>
+      <div style="margin-top:18px">
         <button class="btn-primary" onclick="showSection('products')">Explore Collection</button>
-        <button class="btn-secondary" onclick="showSection('track')">Track Your Order</button>
+        <button class="btn-secondary" onclick="showSection('track')">Track Order</button>
       </div>
     </section>
-
-    <!-- Category Filter Bar -->
     <section class="container" id="productsSection">
-      <h3 class="section-title">Storefront Collection</h3>
-      
-      <div class="category-filters">
-        <button class="filter-btn active" onclick="filterCategory('All', this)">All Items</button>
-        <button class="filter-btn" onclick="filterCategory('Handmade Beaded Bags', this)">Handmade Beaded Bags</button>
-        <button class="filter-btn" onclick="filterCategory('Men\'s Beaded Bags', this)">Men's Beaded Bags</button>
-        <button class="filter-btn" onclick="filterCategory('Handmade Home Décor', this)">Home Décor</button>
-      </div>
-
-      <!-- Dynamic Product Grid -->
-      <div class="product-grid" id="productGrid">
-        <p style="text-align: center; color: #777; grid-column: 1/-1;">Loading catalog from Neon DB...</p>
-      </div>
+      <h3 class="section-title">Our Collection</h3>
+      <div class="category-filters" id="categoryFilters"></div>
+      <div class="product-grid" id="productGrid"><p style="text-align:center;grid-column:1/-1;color:#777">Loading...</p></div>
     </section>
   </main>
 
-  <!-- ================= SECTION 2: ABOUT US ================= -->
-  <section id="aboutSection" class="container" style="display:none;">
+  <section id="aboutSection" class="container" style="display:none">
     <div class="content-box">
       <h3 class="section-title">About MonRex Artworks</h3>
-      <p style="font-size: 1.1rem; color: #ddd; margin-bottom: 20px;">
-        MonRex Artworks is a creative handmade brand focused on unique beadwork, handcrafted bags, jewelry and artistic pieces. Each piece is carefully made with creativity, patience and attention to detail, bringing together traditional craftsmanship and modern style. Our goal is to create beautiful, distinctive pieces that people can enjoy, wear and treasure.
-      </p>
+      <p id="aboutText" style="color:#ddd;margin-bottom:18px"></p>
       <div class="info-grid">
-        <div class="info-item">
-          <h4>📍 Location</h4>
-          <p>Studio based in <strong>Ashaiman, Greater Accra</strong></p>
-        </div>
-        <div class="info-item">
-          <h4>📞 Direct Support</h4>
-          <p>Phone / WhatsApp: <strong>0507482090</strong></p>
-          <p>Email: <strong>kwakyerexford1@gmail.com</strong></p>
-        </div>
-        <div class="info-item">
-          <h4>💳 Payment Options</h4>
-          <p>Direct MTN/Telecel/AT MoMo & Ghana-wide shipping</p>
-        </div>
+        <div class="info-item"><h4>📍 Location</h4><p id="infoLocation"></p></div>
+        <div class="info-item"><h4>📞 Contact</h4><p id="infoPhone"></p><p id="infoEmail"></p></div>
+        <div class="info-item"><h4>💳 Payment</h4><p>Paystack (Card/MoMo) & Direct MoMo</p></div>
       </div>
     </div>
   </section>
 
-  <!-- ================= SECTION 3: TRACK ORDER ================= -->
-  <section id="trackSection" class="container" style="display:none;">
+  <section id="trackSection" class="container" style="display:none">
     <div class="checkout-box">
       <h3 class="section-title">Track Your Order</h3>
-      <p style="text-align: center; color: #aaa; margin-bottom: 20px;">Enter your <strong>Order Code</strong> (e.g. MRX-1024) or <strong>Phone Number</strong></p>
-      
-      <div style="display: flex; gap: 10px;">
-        <input type="text" id="trackInput" placeholder="Enter Order Code or Phone Number" style="flex-grow: 1;">
+      <p style="text-align:center;color:#aaa;margin-bottom:15px">Enter Order Code (e.g. MRX-1024) or Phone Number</p>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="trackInput" placeholder="Order Code or Phone" style="flex:1">
         <button class="btn-primary" onclick="trackOrder()">Search</button>
       </div>
-
-      <div id="trackResult" style="margin-top: 25px;"></div>
+      <div id="trackResult" style="margin-top:20px"></div>
     </div>
   </section>
 
-  <!-- ================= SECTION 4: CART & CHECKOUT ================= -->
-  <section id="checkoutSection" class="container" style="display:none;">
+  <section id="checkoutSection" class="container" style="display:none">
     <div class="checkout-box">
-      <h3 class="section-title">Delivery & Checkout</h3>
-
-      <!-- Selected Items -->
-      <div style="margin-bottom: 20px;">
-        <h4 style="color: #fff; margin-bottom: 10px;">Your Bag / Cart:</h4>
-        <div id="cartItemsList"></div>
-      </div>
-
+      <h3 class="section-title">Checkout</h3>
+      <div id="cartItemsList" style="margin-bottom:15px"></div>
       <form onsubmit="handlePlaceOrder(event)">
-        <div class="form-group">
-          <label>Full Name *</label>
-          <input type="text" id="customerName" required placeholder="e.g. Rexford Kwakye">
+        <div class="form-group"><label>Full Name *</label><input type="text" id="customerName" required></div>
+        <div class="form-group"><label>Phone (MoMo/WhatsApp) *</label><input type="tel" id="customerPhone" required></div>
+        <div class="form-group"><label>Delivery Region *</label><select id="regionSelect" required></select></div>
+        <div class="form-group"><label>Town / Area *</label><select id="townSelect" disabled required></select></div>
+
+        <h4 style="margin:15px 0 8px">Payment Method *</h4>
+        <div class="payment-options">
+          <div class="pay-option selected" onclick="selectPayment('MoMo',this)">
+            <h4>📱 Direct MoMo</h4>
+            <p>Send to our MoMo number</p>
+          </div>
+          <div class="pay-option" onclick="selectPayment('Paystack',this)">
+            <h4>💳 Paystack</h4>
+            <p>Card, Bank or MoMo online</p>
+          </div>
         </div>
 
-        <div class="form-group">
-          <label>Phone Number (MoMo / WhatsApp) *</label>
-          <input type="tel" id="customerPhone" required placeholder="0507482090">
+        <div id="momoDetails" class="payment-notice">
+          <strong>Direct MoMo Details:</strong><br>
+          • Number: <strong id="momoNumber">0507482090</strong><br>
+          • Name: <strong id="momoName">Kwakye Rexford Ayeh</strong><br>
+          <small>Send payment then confirm via WhatsApp.</small>
         </div>
 
-        <!-- Jumia-Style Region & Town Selection -->
-        <div class="form-group">
-          <label>Delivery Region *</label>
-          <select id="regionSelect" required></select>
-        </div>
-
-        <div class="form-group">
-          <label>Town / Pickup Point *</label>
-          <select id="townSelect" disabled required></select>
-        </div>
-
-        <!-- Direct MoMo Details -->
-        <div class="payment-notice">
-          <strong>Direct Mobile Money (MoMo) Details:</strong><br>
-          • Number: <strong>0507482090</strong><br>
-          • Account Name: <strong>Kwakye Rexford Ayeh</strong><br>
-          <small>Verification & order dispatch update will be sent directly via WhatsApp.</small>
+        <div id="paystackDetails" class="payment-notice" style="display:none">
+          <strong>Paystack Secure Payment:</strong><br>
+          <small>You will be redirected to Paystack to pay with Card, Bank, or MoMo after confirming your order.</small>
         </div>
 
         <div class="order-summary-box">
           <p>Subtotal: <span id="subtotalDisplay" class="summary-val">GH₵ 0.00</span></p>
-          <p>Delivery Fee: <span id="deliveryFeeDisplay" class="summary-val" style="color: var(--accent-red);">GH₵ 0.00</span></p>
-          <hr style="border-color: #333; margin: 10px 0;">
-          <h3 style="display: flex; justify-content: space-between;">
-            <span>Total:</span>
-            <span id="totalDisplay">GH₵ 0.00</span>
-          </h3>
+          <p>Delivery: <span id="deliveryFeeDisplay" class="summary-val" style="color:var(--red)">GH₵ 0.00</span></p>
+          <hr style="border-color:#333;margin:8px 0">
+          <h3 style="display:flex;justify-content:space-between">Total: <span id="totalDisplay">GH₵ 0.00</span></h3>
         </div>
-
-        <button type="submit" class="btn-primary" style="width: 100%; padding: 15px; margin-top: 15px; font-size: 1.1rem;">
-          Confirm & Send Order via WhatsApp
-        </button>
+        <button type="submit" class="btn-primary" style="width:100%;padding:14px;font-size:1.05rem;margin-top:10px" id="checkoutBtn">Confirm Order</button>
       </form>
     </div>
   </section>
 
-  <!-- Floating WhatsApp Contact Button -->
-  <a href="https://wa.me/233507482090" class="whatsapp-float" target="_blank">
-    💬 WhatsApp MonRex
-  </a>
-
+  <a href="https://wa.me/233507482090" class="whatsapp-float" target="_blank">💬 WhatsApp</a>
+  <script src="https://js.paystack.co/v1/inline.js"></script>
   <script src="checkout.js"></script>
 </body>
 </html>
