@@ -107,7 +107,7 @@ let cart = JSON.parse(localStorage.getItem('monrex_cart')) || [];
 let selectedDeliveryFee = 0;
 let paystackPublicKey = '';
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", function() {
   renderCategoryFilters();
   renderProducts(allProducts);
   initRegionDropdown();
@@ -311,7 +311,7 @@ function updateTotals() {
   if (t) t.textContent = 'GH₵ ' + tot.toFixed(2);
 }
 
-async function handlePlaceOrder(event) {
+function handlePlaceOrder(event) {
   event.preventDefault();
   if (!cart.length) return alert("Your cart is empty.");
 
@@ -327,11 +327,13 @@ async function handlePlaceOrder(event) {
   const subtotal = getSubtotal();
   const total = subtotal + selectedDeliveryFee;
 
+  // Paystack flow
   if (payMethod === 'paystack') {
     if (!paystackPublicKey || paystackPublicKey.trim() === '') {
-      alert("Paystack is not configured yet. Please select 'Direct MoMo' or add your Paystack Public Key in Admin Settings.");
+      alert("Paystack Public Key is missing. Please select 'Direct MoMo' or add your Paystack Public Key in Admin Settings.");
       return;
     }
+
     try {
       const handler = PaystackPop.setup({
         key: paystackPublicKey.trim(),
@@ -339,47 +341,53 @@ async function handlePlaceOrder(event) {
         amount: Math.round(total * 100),
         currency: 'GHS',
         ref: 'MRX-' + Date.now(),
-        callback: async function(response) {
-          await saveOrder(name, phone, email, region, town, total, 'Paystack', response.reference);
+        callback: function(response) {
+          saveOrder(name, phone, email, region, town, total, 'Paystack', response.reference);
         },
-        onClose: function() { alert("Payment window closed."); }
+        onClose: function() {
+          alert("Payment window closed.");
+        }
       });
       handler.openIframe();
-    } catch(err) { alert("Paystack error: " + err.message); }
+    } catch(err) {
+      alert("Paystack error: " + err.message);
+    }
     return;
   }
 
-  await saveOrder(name, phone, email, region, town, total, 'Direct MoMo', '');
-  const itemsText = cart.map(i => '• ' + i.name + ' (x' + i.quantity + ') - GH₵' + (i.price * i.quantity).toFixed(2)).join('\n');
-  const wa = encodeURIComponent(
-    'Hello MonRex Artworks! 🎨\nI want to confirm my order:\n\n' +
-    '*Name:* ' + name + '\n' +
-    '*Phone:* ' + phone + '\n' +
-    '*Location:* ' + town + ', ' + region + '\n\n' +
-    '*Items:*\n' + itemsText + '\n\n' +
-    '*Subtotal:* GH₵' + subtotal.toFixed(2) + '\n' +
-    '*Delivery Fee:* GH₵' + selectedDeliveryFee.toFixed(2) + '\n' +
-    '*Total:* GH₵' + total.toFixed(2) + '\n\n' +
-    '*Payment:* Direct MoMo (0507482090)'
-  );
-  cart = [];
-  localStorage.removeItem('monrex_cart');
-  updateCartBadge();
-  window.location.href = 'https://wa.me/233507482090?text=' + wa;
+  // Direct MoMo flow
+  saveOrder(name, phone, email, region, town, total, 'Direct MoMo', '').then(() => {
+    const itemsText = cart.map(i => '• ' + i.name + ' (x' + i.quantity + ') - GH₵' + (i.price * i.quantity).toFixed(2)).join('\n');
+    const wa = encodeURIComponent(
+      'Hello MonRex Artworks! 🎨\nI want to confirm my order:\n\n' +
+      '*Name:* ' + name + '\n' +
+      '*Phone:* ' + phone + '\n' +
+      '*Location:* ' + town + ', ' + region + '\n\n' +
+      '*Items:*\n' + itemsText + '\n\n' +
+      '*Subtotal:* GH₵' + subtotal.toFixed(2) + '\n' +
+      '*Delivery Fee:* GH₵' + selectedDeliveryFee.toFixed(2) + '\n' +
+      '*Total:* GH₵' + total.toFixed(2) + '\n\n' +
+      '*Payment:* Direct MoMo (0507482090)'
+    );
+    cart = [];
+    localStorage.removeItem('monrex_cart');
+    updateCartBadge();
+    window.location.href = 'https://wa.me/233507482090?text=' + wa;
+  });
 }
 
-async function saveOrder(name, phone, email, region, town, total, method, ref) {
-  try {
-    const r = await fetch('/api/orders', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        customerName: name, phone, email, region, town,
-        deliveryFee: selectedDeliveryFee, items: cart, totalAmount: total,
-        paymentMethod: method, paystackRef: ref
-      })
-    });
-    const d = await r.json();
+function saveOrder(name, phone, email, region, town, total, method, ref) {
+  return fetch('/api/orders', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      customerName: name, phone, email, region, town,
+      deliveryFee: selectedDeliveryFee, items: cart, totalAmount: total,
+      paymentMethod: method, paystackRef: ref
+    })
+  })
+  .then(r => r.json())
+  .then(d => {
     if (d.success) {
       alert('Order #' + d.order.order_code + ' confirmed successfully!');
       cart = [];
@@ -389,29 +397,34 @@ async function saveOrder(name, phone, email, region, town, total, method, ref) {
       document.getElementById('trackInput').value = d.order.order_code;
       trackOrder();
     }
-  } catch(e) { alert("Order saved. Contacting via WhatsApp..."); }
+  })
+  .catch(e => {
+    alert("Order recorded. Redirecting...");
+  });
 }
 
-async function trackOrder() {
+function trackOrder() {
   const q = document.getElementById('trackInput').value.trim();
   const el = document.getElementById('trackResult');
   if (!q) return alert("Enter your order code or phone number.");
   el.innerHTML = '<p style="color:#aaa;">Searching order records...</p>';
-  try {
-    const r = await fetch('/api/orders/track/' + encodeURIComponent(q));
-    const d = await r.json();
-    if (!d.success) { el.innerHTML = '<p style="color:var(--accent-red);">' + d.message + '</p>'; return; }
-    el.innerHTML = d.orders.map(o => {
-      const sc = o.status.toLowerCase();
-      const cls = sc.includes('delivered') ? 'status-delivered' : sc.includes('delivery') ? 'status-delivery' : sc.includes('production') ? 'status-production' : 'status-pending';
-      return '<div style="background:#222;padding:15px;border-radius:8px;margin-bottom:12px;border-left:4px solid var(--accent-red);">' +
-        '<div style="display:flex;justify-content:space-between;align-items:center;">' +
-          '<h4>Order #' + o.order_code + '</h4>' +
-          '<span class="status-badge ' + cls + '">' + o.status + '</span>' +
-        '</div>' +
-        '<p style="font-size:0.88rem;color:#aaa;margin-top:5px;">Customer: <strong>' + o.customer_name + '</strong> | Location: <strong>' + o.town + ', ' + o.region + '</strong></p>' +
-        '<p style="margin-top:8px;">Total: <strong>GH₵ ' + Number(o.total_amount).toFixed(2) + '</strong></p>' +
-      '</div>';
-    }).join('');
-  } catch(e) { el.innerHTML = '<p style="color:var(--accent-red);">Error tracking order. Please try again.</p>'; }
+  
+  fetch('/api/orders/track/' + encodeURIComponent(q))
+    .then(r => r.json())
+    .then(d => {
+      if (!d.success) { el.innerHTML = '<p style="color:var(--accent-red);">' + d.message + '</p>'; return; }
+      el.innerHTML = d.orders.map(o => {
+        const sc = o.status.toLowerCase();
+        const cls = sc.includes('delivered') ? 'status-delivered' : sc.includes('delivery') ? 'status-delivery' : sc.includes('production') ? 'status-production' : 'status-pending';
+        return '<div style="background:#222;padding:15px;border-radius:8px;margin-bottom:12px;border-left:4px solid var(--accent-red);">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+            '<h4>Order #' + o.order_code + '</h4>' +
+            '<span class="status-badge ' + cls + '">' + o.status + '</span>' +
+          '</div>' +
+          '<p style="font-size:0.88rem;color:#aaa;margin-top:5px;">Customer: <strong>' + o.customer_name + '</strong> | Location: <strong>' + o.town + ', ' + o.region + '</strong></p>' +
+          '<p style="margin-top:8px;">Total: <strong>GH₵ ' + Number(o.total_amount).toFixed(2) + '</strong></p>' +
+        '</div>';
+      }).join('');
+    })
+    .catch(e => { el.innerHTML = '<p style="color:var(--accent-red);">Error tracking order. Please try again.</p>'; });
 }
