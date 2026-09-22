@@ -264,45 +264,103 @@ function selectPayment(method, el) {
   document.getElementById('checkoutBtn').textContent = method === 'Paystack' ? 'Pay with Paystack' : 'Confirm & Send via WhatsApp';
 }
 
-async function handlePlaceOrder(e) {
-  e.preventDefault();
-  if (!cart.length) return alert('Cart is empty.');
-  const customerName = document.getElementById('customerName').value;
-  const phone = document.getElementById('customerPhone').value;
+async function handlePlaceOrder(event) {
+  event.preventDefault();
+  
+  if (!cart.length) {
+    alert("Your cart is empty. Please add an item first.");
+    return;
+  }
+
+  const name = document.getElementById('customerName').value.trim();
+  const phone = document.getElementById('customerPhone').value.trim();
+  const email = document.getElementById('customerEmail').value.trim();
   const region = document.getElementById('regionSelect').value;
   const town = document.getElementById('townSelect').value;
-  if (!region || !town) return alert('Select region and town.');
-  const subtotal = getSubtotal(), grandTotal = subtotal + selectedDeliveryFee;
+  const payMethod = document.querySelector('input[name="payMethod"]:checked').value;
 
-  if (selectedPayment === 'Paystack' && paystackKey) {
-    const handler = PaystackPop.setup({
-      key: paystackKey,
-      email: phone + '@monrex.com',
-      amount: grandTotal * 100,
-      currency: 'GHS',
-      callback: async function(response) {
-        const verify = await fetch('/api/paystack/verify', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({reference: response.reference}) });
-        const vData = await verify.json();
-        if (vData.verified) {
-          await saveOrder(customerName, phone, region, town, grandTotal, 'Paystack', response.reference);
-          alert('Payment successful! Order confirmed.');
-          cart = []; localStorage.removeItem('monrex_cart'); updateCartBadge();
-        } else { alert('Payment could not be verified.'); }
-      },
-      onClose: function() { alert('Payment window closed.'); }
-    });
-    handler.openIframe();
-  } else {
-    const res = await saveOrder(customerName, phone, region, town, grandTotal, 'MoMo', null);
-    const orderCode = res.order ? res.order.order_code : 'MRX-' + Date.now();
-    const itemsText = cart.map(i => `• ${i.name} (x${i.quantity})`).join('\n');
-    const waText = encodeURIComponent(
-      `Hello MonRex Artworks! 🎨\nOrder *#${orderCode}*:\n\n*Name:* ${customerName}\n*Phone:* ${phone}\n*Delivery:* ${town}, ${region}\n\n*Items:*\n${itemsText}\n\n*Delivery:* GH₵${selectedDeliveryFee.toFixed(2)}\n*Total:* GH₵${grandTotal.toFixed(2)}\n*Payment:* Direct MoMo`
-    );
-    cart = []; localStorage.removeItem('monrex_cart'); updateCartBadge();
-    window.location.href = `https://wa.me/233507482090?text=${waText}`;
+  if (!name || !phone || !email) {
+    alert("Please fill in your Name, Phone number, and Email.");
+    return;
   }
-}
+
+  if (!region || !town) {
+    alert("Please select your Delivery Region and Town.");
+    return;
+  }
+
+  const subtotal = Number(getSubtotal());
+  const deliveryFee = Number(selectedDeliveryFee);
+  const total = Number((subtotal + deliveryFee).toFixed(2));
+
+  if (isNaN(total) || total <= 0) {
+    alert("Invalid order amount. Please check your cart items.");
+    return;
+  }
+
+  // ===== OPTION A: PAYSTACK PAYMENT =====
+  if (payMethod === 'paystack') {
+    if (!paystackPublicKey || paystackPublicKey.trim() === '') {
+      alert("⚠️ Paystack Public Key is not configured yet!\n\nPlease set your Paystack Public Key in Admin -> Store Settings, or choose 'Direct MoMo' to complete your order.");
+      return;
+    }
+
+    if (typeof PaystackPop === 'undefined') {
+      alert("⚠️ Paystack script could not be loaded. Please check your internet connection or disable ad-blockers, then refresh.");
+      return;
+    }
+
+    try {
+      const handler = PaystackPop.setup({
+        key: paystackPublicKey.trim(),
+        email: email,
+        amount: Math.round(total * 100), // Amount in Ghana pesewas
+        currency: 'GHS',
+        ref: 'MRX-' + Date.now(),
+        metadata: {
+          custom_fields: [
+            { display_name: "Customer Name", variable_name: "customer_name", value: name },
+            { display_name: "Phone Number", variable_name: "phone_number", value: phone },
+            { display_name: "Delivery Location", variable_name: "delivery_location", value: `${town}, ${region}` }
+          ]
+        },
+        callback: async function (response) {
+          // Payment successful on Paystack's end
+          alert("Payment received! Finalizing your order...");
+          await saveOrder(name, phone, email, region, town, total, 'Paystack', response.reference);
+        },
+        onClose: function () {
+          alert("Payment window closed. Order was not charged.");
+        }
+      });
+
+      handler.openIframe();
+    } catch (err) {
+      console.error("Paystack Error:", err);
+      alert("Error opening Paystack popup: " + err.message);
+    }
+    return;
+  }
+
+  // ===== OPTION B: DIRECT MOMO (WHATSAPP) =====
+  await saveOrder(name, phone, email, region, town, total, 'Direct MoMo', '');
+  const itemsText = cart.map(i => `• ${i.name} (x${i.quantity}) - GH₵${(i.price * i.quantity).toFixed(2)}`).join('\n');
+  const wa = encodeURIComponent(
+    `Hello MonRex Artworks! 🎨\nI want to confirm my order:\n\n` +
+    `*Name:* ${name}\n` +
+    `*Phone:* ${phone}\n` +
+    `*Delivery Location:* ${town}, ${region}\n\n` +
+    `*Items:*\n${itemsText}\n\n` +
+    `*Subtotal:* GH₵${subtotal.toFixed(2)}\n` +
+    `*Delivery Fee:* GH₵${deliveryFee.toFixed(2)}\n` +
+    `*Total:* GH₵${total.toFixed(2)}\n\n` +
+    `*Payment Method:* Direct MoMo (0507482090)`
+  );
+  cart = [];
+  localStorage.removeItem('monrex_cart');
+  updateCartBadge();
+  window.location.href = `https://wa.me/233507482090?text=${wa}`;
+}}
 
 async function saveOrder(customerName, phone, region, town, grandTotal, paymentMethod, paystackRef) {
   const res = await fetch('/api/orders', { method:'POST', headers:{'Content-Type':'application/json'},
