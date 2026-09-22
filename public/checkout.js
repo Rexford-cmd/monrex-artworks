@@ -137,9 +137,14 @@ async function loadSettings() {
       if (d.settings.hero_title) document.getElementById('heroTitle').textContent = d.settings.hero_title;
       if (d.settings.hero_subtitle) document.getElementById('heroSubtitle').textContent = d.settings.hero_subtitle;
       if (d.settings.about_text) document.getElementById('aboutText').textContent = d.settings.about_text;
-      if (d.settings.paystack_public_key) paystackPublicKey = d.settings.paystack_public_key;
+      if (d.settings.paystack_public_key) {
+        // Clean key: remove whitespace, linebreaks, quotes
+        paystackPublicKey = d.settings.paystack_public_key.trim().replace(/['"]/g, '');
+      }
     }
-  } catch(e) {}
+  } catch(e) {
+    console.error("Settings error:", e);
+  }
 }
 
 async function loadCategories() {
@@ -329,18 +334,38 @@ function handlePlaceOrder(event) {
 
   // Paystack flow
   if (payMethod === 'paystack') {
-    if (!paystackPublicKey || paystackPublicKey.trim() === '') {
-      alert("Paystack Public Key is missing. Please select 'Direct MoMo' or add your Paystack Public Key in Admin Settings.");
+    const cleanKey = (paystackPublicKey || '').trim().replace(/['"]/g, '');
+
+    // Diagnostic validation
+    if (!cleanKey || cleanKey === '') {
+      alert("⚠️ No Paystack Public Key found!\n\nPlease go to Admin Settings and enter your Paystack Public Key (starting with pk_live_ or pk_test_).");
+      return;
+    }
+
+    if (!cleanKey.startsWith('pk_')) {
+      alert("⚠️ Invalid Paystack Key format!\n\nYour key is currently: \"" + cleanKey.substring(0, 8) + "...\"\n\nIt MUST start with 'pk_live_' or 'pk_test_'. Make sure you did NOT enter your secret key (sk_).");
+      return;
+    }
+
+    if (cleanKey.length < 25) {
+      alert("⚠️ Paystack Key seems incomplete!\n\nKey length: " + cleanKey.length + " characters.\nPlease copy the entire Public Key from your Paystack Dashboard.");
       return;
     }
 
     try {
       const handler = PaystackPop.setup({
-        key: paystackPublicKey.trim(),
+        key: cleanKey,
         email: email,
         amount: Math.round(total * 100),
         currency: 'GHS',
         ref: 'MRX-' + Date.now(),
+        metadata: {
+          custom_fields: [
+            { display_name: "Customer Name", variable_name: "customer_name", value: name },
+            { display_name: "Phone Number", variable_name: "phone_number", value: phone },
+            { display_name: "Delivery Location", variable_name: "delivery_location", value: town + ", " + region }
+          ]
+        },
         callback: function(response) {
           saveOrder(name, phone, email, region, town, total, 'Paystack', response.reference);
         },
@@ -350,7 +375,7 @@ function handlePlaceOrder(event) {
       });
       handler.openIframe();
     } catch(err) {
-      alert("Paystack error: " + err.message);
+      alert("Paystack startup error: " + err.message);
     }
     return;
   }
@@ -399,7 +424,7 @@ function saveOrder(name, phone, email, region, town, total, method, ref) {
     }
   })
   .catch(e => {
-    alert("Order recorded. Redirecting...");
+    alert("Order saved. Contacting via WhatsApp...");
   });
 }
 
