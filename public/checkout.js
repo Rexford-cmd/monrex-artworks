@@ -106,7 +106,7 @@ let allCategories = ["Handmade Beaded Bags", "Men's Beaded Bags", "Handmade Home
 let cart = JSON.parse(localStorage.getItem('monrex_cart')) || [];
 let selectedDeliveryFee = 0;
 
-// Your Real Live Paystack Public Key
+// Default Key
 let paystackPublicKey = 'pk_live_78d879b3f53903de0c6288e5c1f5f2226e3c1cb4';
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -139,7 +139,7 @@ async function loadSettings() {
       if (d.settings.hero_title) document.getElementById('heroTitle').textContent = d.settings.hero_title;
       if (d.settings.hero_subtitle) document.getElementById('heroSubtitle').textContent = d.settings.hero_subtitle;
       if (d.settings.about_text) document.getElementById('aboutText').textContent = d.settings.about_text;
-      if (d.settings.paystack_public_key && d.settings.paystack_public_key.startsWith('pk_')) {
+      if (d.settings.paystack_public_key && d.settings.paystack_public_key.trim().startsWith('pk_')) {
         paystackPublicKey = d.settings.paystack_public_key.trim();
       }
     }
@@ -333,9 +333,11 @@ function handlePlaceOrder(event) {
 
   // Paystack flow
   if (payMethod === 'paystack') {
+    const cleanKey = paystackPublicKey.trim();
+
     try {
       const handler = PaystackPop.setup({
-        key: paystackPublicKey,
+        key: cleanKey,
         email: email,
         amount: Math.round(total * 100),
         currency: 'GHS',
