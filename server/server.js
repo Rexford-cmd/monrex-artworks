@@ -13,25 +13,37 @@ app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 app.use(express.static(path.join(__dirname, '../public')));
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
-});
+// Connect to Neon PostgreSQL with resilient SSL
+let pool = null;
+if (process.env.DATABASE_URL) {
+  pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false
+    },
+    connectionTimeoutMillis: 10000
+  });
+} else {
+  console.error("❌ CRITICAL: DATABASE_URL environment variable is MISSING on Render!");
+}
 
 async function initDB() {
-  if (!process.env.DATABASE_URL) return console.log("⚠️ No DATABASE_URL found.");
+  if (!pool) return;
   try {
-    await pool.query(`CREATE TABLE IF NOT EXISTS categories (
+    const client = await pool.connect();
+    console.log("✅ Successfully connected to Neon PostgreSQL Database!");
+    
+    await client.query(`CREATE TABLE IF NOT EXISTS categories (
       id SERIAL PRIMARY KEY, name VARCHAR(100) UNIQUE NOT NULL, sort_order INT DEFAULT 0
     )`);
 
-    await pool.query(`CREATE TABLE IF NOT EXISTS products (
+    await client.query(`CREATE TABLE IF NOT EXISTS products (
       id SERIAL PRIMARY KEY, name VARCHAR(255) NOT NULL, price NUMERIC(10,2) NOT NULL,
       category VARCHAR(100) NOT NULL, description TEXT, image_url TEXT,
       in_stock BOOLEAN DEFAULT true, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`);
 
-    await pool.query(`CREATE TABLE IF NOT EXISTS orders (
+    await client.query(`CREATE TABLE IF NOT EXISTS orders (
       id SERIAL PRIMARY KEY, order_code VARCHAR(50) UNIQUE NOT NULL,
       customer_name VARCHAR(255) NOT NULL, phone VARCHAR(50) NOT NULL,
       email VARCHAR(255), region VARCHAR(100) NOT NULL, town VARCHAR(100) NOT NULL,
@@ -41,7 +53,7 @@ async function initDB() {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`);
 
-    await pool.query(`CREATE TABLE IF NOT EXISTS store_settings (
+    await client.query(`CREATE TABLE IF NOT EXISTS store_settings (
       key VARCHAR(100) PRIMARY KEY, value TEXT NOT NULL
     )`);
 
@@ -53,31 +65,44 @@ async function initDB() {
       ['paystack_public_key', process.env.PAYSTACK_PUBLIC_KEY || 'pk_live_78d879b3f53903de0c6288e5c1f5f2226e3c1cb4']
     ];
     for (const [k, v] of defaultSettings) {
-      await pool.query(`INSERT INTO store_settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO NOTHING`, [k, v]);
+      await client.query(`INSERT INTO store_settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO NOTHING`, [k, v]);
     }
 
-    // Default categories for your real beadwork
-    const catCount = await pool.query('SELECT COUNT(*) FROM categories');
+    const catCount = await client.query('SELECT COUNT(*) FROM categories');
     if (parseInt(catCount.rows[0].count) === 0) {
-      for (const c of ['Handmade Beaded Bags', "Men's Beaded Bags", 'Handmade Home Décor', 'Accessories & Jewelry']) {
-        await pool.query('INSERT INTO categories (name) VALUES ($1) ON CONFLICT DO NOTHING', [c]);
+      for (const c of ['Handmade Beaded Bags', "Men's Beaded Bags", 'Handmade Home Décor']) {
+        await client.query('INSERT INTO categories (name) VALUES ($1) ON CONFLICT DO NOTHING', [c]);
       }
     }
 
-    console.log("✅ Neon DB tables ready! Clean store awaiting real products.");
+    client.release();
+    console.log("✅ Neon DB tables initialized and ready!");
   } catch (err) {
-    console.error("❌ DB Init Error:", err.message);
+    console.error("❌ Database Initialization Error:", err.message);
   }
 }
 initDB();
 
-// ===== CLEAR ALL PRODUCTS (ADMIN ACTION) =====
+// ===== DB HEALTH CHECK API =====
+app.get('/api/db-check', async (req, res) => {
+  if (!process.env.DATABASE_URL) {
+    return res.json({ success: false, message: "DATABASE_URL environment variable is NOT set in Render." });
+  }
+  try {
+    const result = await pool.query('SELECT NOW()');
+    res.json({ success: true, message: "Connected to Neon DB successfully!", server_time: result.rows[0].now });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ===== CLEAR ALL PRODUCTS =====
 app.post('/api/products/clear-all', async (req, res) => {
   const { pin } = req.body;
   if (pin !== ADMIN_PIN) return res.status(403).json({ success: false, message: "Invalid PIN" });
   try {
     await pool.query('DELETE FROM products');
-    res.json({ success: true, message: "All products removed. Store is clean!" });
+    res.json({ success: true, message: "All products removed." });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -86,6 +111,7 @@ app.post('/api/products/clear-all', async (req, res) => {
 // ===== SETTINGS APIS =====
 app.get('/api/settings', async (req, res) => {
   try {
+    if (!pool) return res.json({ success: true, settings: {} });
     const r = await pool.query('SELECT * FROM store_settings');
     const s = {};
     r.rows.forEach(row => s[row.key] = row.value);
@@ -105,6 +131,7 @@ app.put('/api/settings', async (req, res) => {
 // ===== CATEGORIES APIS =====
 app.get('/api/categories', async (req, res) => {
   try {
+    if (!pool) return res.json({ success: true, categories: [] });
     const r = await pool.query('SELECT * FROM categories ORDER BY id ASC');
     res.json({ success: true, categories: r.rows });
   } catch (err) { res.status(500).json({ success: false, error: err.message }); }
@@ -139,9 +166,12 @@ app.delete('/api/categories/:id', async (req, res) => {
 // ===== PRODUCTS APIS =====
 app.get('/api/products', async (req, res) => {
   try {
+    if (!pool) return res.status(500).json({ success: false, error: "DATABASE_URL is not set on server." });
     const r = await pool.query('SELECT * FROM products ORDER BY id ASC');
     res.json({ success: true, products: r.rows });
-  } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 app.post('/api/products', async (req, res) => {
@@ -189,6 +219,7 @@ app.delete('/api/products/:id', async (req, res) => {
 app.get('/api/orders', async (req, res) => {
   if (req.query.pin !== ADMIN_PIN) return res.status(403).json({ success: false, message: "Invalid PIN" });
   try {
+    if (!pool) return res.status(500).json({ success: false, error: "DATABASE_URL missing" });
     const r = await pool.query('SELECT * FROM orders ORDER BY created_at DESC');
     res.json({ success: true, orders: r.rows });
   } catch (err) { res.status(500).json({ success: false, error: err.message }); }
