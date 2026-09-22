@@ -95,6 +95,12 @@ let allProducts = [];
 let allCategories = [];
 let cart = JSON.parse(localStorage.getItem('monrex_cart')) || [];
 let selectedDeliveryFee = 0;
+
+// Dynamic MoMo & WhatsApp settings
+let momoNumber = '0507482090';
+let momoName = 'Kwakye Rexford Ayeh';
+let momoNetwork = 'Telecel Cash (Vodafone)';
+let whatsappNumber = '233507482090';
 let paystackPublicKey = 'pk_live_78d879b3f53903de0c6288e5c1f5f2226e3c1cb4';
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -109,18 +115,50 @@ function selectPayMethod(method) {
   document.getElementById('selectedPaymentMethod').value = method;
   document.getElementById('btnPaystack').classList.remove('active');
   document.getElementById('btnMomo').classList.remove('active');
+  
+  const submitBtn = document.getElementById('checkoutSubmitBtn');
+  const instructions = document.getElementById('momoInstructionsBox');
+
   if (method === 'paystack') {
     document.getElementById('btnPaystack').classList.add('active');
+    if (submitBtn) submitBtn.textContent = '⚡ Send MoMo Prompt to My Phone';
+    if (instructions) instructions.style.display = 'none';
   } else {
     document.getElementById('btnMomo').classList.add('active');
+    if (submitBtn) submitBtn.textContent = '💬 Confirm via WhatsApp';
+    if (instructions) instructions.style.display = 'block';
   }
 }
 
 async function loadSettings() {
   try {
-    const r = await fetch('/api/settings');
+    const r = await fetch('/api/settings?t=' + Date.now());
     const d = await r.json();
     if (d.success && d.settings) {
+      if (d.settings.momo_number) momoNumber = d.settings.momo_number;
+      if (d.settings.momo_name) momoName = d.settings.momo_name;
+      if (d.settings.momo_network) momoNetwork = d.settings.momo_network;
+      if (d.settings.whatsapp_number) whatsappNumber = d.settings.whatsapp_number;
+
+      // Update UI elements
+      const btnSub = document.getElementById('btnMomoSubtitle');
+      if (btnSub) btnSub.textContent = `${momoNumber} (${momoNetwork})`;
+
+      const dispNum = document.getElementById('displayMomoNum');
+      if (dispNum) dispNum.textContent = momoNumber;
+
+      const dispName = document.getElementById('displayMomoName');
+      if (dispName) dispName.textContent = momoName;
+
+      const dispNet = document.getElementById('displayMomoNetwork');
+      if (dispNet) dispNet.textContent = momoNetwork;
+
+      const floatWa = document.getElementById('floatingWaBtn');
+      if (floatWa) floatWa.href = `https://wa.me/${whatsappNumber}`;
+
+      const abPhone = document.getElementById('aboutPhone');
+      if (abPhone) abPhone.textContent = momoNumber;
+
       if (d.settings.announcement) document.getElementById('announcementBar').textContent = d.settings.announcement;
       if (d.settings.hero_title) document.getElementById('heroTitle').textContent = d.settings.hero_title;
       if (d.settings.hero_subtitle) document.getElementById('heroSubtitle').textContent = d.settings.hero_subtitle;
@@ -132,7 +170,7 @@ async function loadSettings() {
 
 async function loadCategories() {
   try {
-    const r = await fetch('/api/categories');
+    const r = await fetch('/api/categories?t=' + Date.now());
     const d = await r.json();
     if (d.success && d.categories && d.categories.length) {
       allCategories = d.categories.map(c => c.name);
@@ -150,7 +188,7 @@ function renderCategoryFilters() {
 
 async function fetchProducts() {
   try {
-    const r = await fetch('/api/products');
+    const r = await fetch('/api/products?t=' + Date.now());
     const d = await r.json();
     if (d.success && d.products) {
       allProducts = d.products;
@@ -165,8 +203,8 @@ function renderProducts(products) {
   if (!products || products.length === 0) {
     grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px 20px; background: #181818; border-radius: 10px; border: 1px dashed #333;">' +
       '<h3 style="color: #fff; margin-bottom: 8px;">✨ New Collection Coming Soon!</h3>' +
-      '<p style="color: #aaa; font-size: 0.95rem;">We are currently crafting and uploading our latest handmade beaded designs.</p>' +
-      '<a href="https://wa.me/233507482090" target="_blank" class="btn-primary" style="display: inline-block; margin-top: 15px; text-decoration: none;">Chat on WhatsApp for Custom Orders</a>' +
+      '<p style="color: #aaa; font-size: 0.95rem;">We are currently uploading our latest handmade beaded bags.</p>' +
+      '<a href="https://wa.me/' + whatsappNumber + '" target="_blank" class="btn-primary" style="display: inline-block; margin-top: 15px; text-decoration: none;">Chat on WhatsApp for Orders</a>' +
     '</div>';
     return;
   }
@@ -319,6 +357,7 @@ function handlePlaceOrder(event) {
   const subtotal = getSubtotal();
   const total = subtotal + selectedDeliveryFee;
 
+  // Option 1: Instant MoMo Phone Prompt (Paystack)
   if (payMethod === 'paystack') {
     try {
       const handler = PaystackPop.setup({
@@ -327,16 +366,24 @@ function handlePlaceOrder(event) {
         amount: Math.round(total * 100),
         currency: 'GHS',
         ref: 'MRX-' + Date.now(),
-        callback: function(response) {
-          saveOrder(name, phone, email, region, town, total, 'Paystack', response.reference);
+        metadata: {
+          custom_fields: [
+            { display_name: "Customer Name", variable_name: "customer_name", value: name },
+            { display_name: "Phone Number", variable_name: "phone_number", value: phone },
+            { display_name: "Delivery Location", variable_name: "delivery_location", value: town + ", " + region }
+          ]
         },
-        onClose: function() { alert("Payment window closed."); }
+        callback: function(response) {
+          saveOrder(name, phone, email, region, town, total, 'Instant MoMo', response.reference);
+        },
+        onClose: function() { alert("Payment prompt closed."); }
       });
       handler.openIframe();
-    } catch(err) { alert("Paystack error: " + err.message); }
+    } catch(err) { alert("Payment error: " + err.message); }
     return;
   }
 
+  // Option 2: Direct MoMo WhatsApp Flow (uses dynamic admin numbers)
   saveOrder(name, phone, email, region, town, total, 'Direct MoMo', '').then(() => {
     const itemsText = cart.map(i => '• ' + i.name + ' (x' + i.quantity + ') - GH₵' + (i.price * i.quantity).toFixed(2)).join('\n');
     const wa = encodeURIComponent(
@@ -348,12 +395,12 @@ function handlePlaceOrder(event) {
       '*Subtotal:* GH₵' + subtotal.toFixed(2) + '\n' +
       '*Delivery Fee:* GH₵' + selectedDeliveryFee.toFixed(2) + '\n' +
       '*Total:* GH₵' + total.toFixed(2) + '\n\n' +
-      '*Payment:* Direct MoMo (0507482090)'
+      '*Payment Method:* Direct MoMo (' + momoNumber + ' - ' + momoName + ')'
     );
     cart = [];
     localStorage.removeItem('monrex_cart');
     updateCartBadge();
-    window.location.href = 'https://wa.me/233507482090?text=' + wa;
+    window.location.href = 'https://wa.me/' + whatsappNumber + '?text=' + wa;
   });
 }
 
@@ -370,7 +417,7 @@ function saveOrder(name, phone, email, region, town, total, method, ref) {
   .then(r => r.json())
   .then(d => {
     if (d.success) {
-      alert('Order #' + d.order.order_code + ' confirmed successfully!');
+      alert('🎉 Order #' + d.order.order_code + ' confirmed successfully!');
       cart = [];
       localStorage.removeItem('monrex_cart');
       updateCartBadge();
