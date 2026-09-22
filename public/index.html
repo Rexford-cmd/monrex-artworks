@@ -50,8 +50,8 @@
       <p id="aboutText" style="font-size:1.05rem;color:#ddd;margin-bottom:20px;">MonRex Artworks is a creative handmade brand focused on unique beadwork, handcrafted bags, jewelry and artistic pieces. Each piece is carefully made with creativity, patience and attention to detail, bringing together traditional craftsmanship and modern style.</p>
       <div class="info-grid">
         <div class="info-item"><h4>📍 Location</h4><p>Studio based in <strong>Ashaiman, Greater Accra</strong></p></div>
-        <div class="info-item"><h4>📞 Direct Support</h4><p>Phone / WhatsApp: <strong>0507482090</strong></p><p>Email: <strong>kwakyerexford1@gmail.com</strong></p></div>
-        <div class="info-item"><h4>💳 Payment Options</h4><p>Paystack (Card/MoMo) & Direct MTN / Telecel MoMo</p></div>
+        <div class="info-item"><h4>📞 Direct Support</h4><p>Phone / WhatsApp: <strong id="aboutPhone">0507482090</strong></p><p>Email: <strong>kwakyerexford1@gmail.com</strong></p></div>
+        <div class="info-item"><h4>💳 Payment Options</h4><p>Instant MoMo Prompt (MTN, Telecel, AT) & Direct Transfer</p></div>
       </div>
     </div>
   </section>
@@ -78,24 +78,38 @@
 
       <form onsubmit="handlePlaceOrder(event)">
         <div class="form-group"><label>Full Name *</label><input type="text" id="customerName" required placeholder="e.g. Kwakye Rexford"></div>
-        <div class="form-group"><label>Phone Number (MoMo / WhatsApp) *</label><input type="tel" id="customerPhone" required placeholder="0507482090"></div>
-        <div class="form-group"><label>Email Address *</label><input type="email" id="customerEmail" required placeholder="you@email.com"></div>
+        <div class="form-group"><label>MoMo / Phone Number *</label><input type="tel" id="customerPhone" required placeholder="0507482090"></div>
+        <div class="form-group"><label>Email Address *</label><input type="email" id="customerEmail" required placeholder="kwakyerexford1@gmail.com"></div>
         <div class="form-group"><label>Delivery Region *</label><select id="regionSelect" required></select></div>
         <div class="form-group"><label>Town / Area *</label><select id="townSelect" disabled required></select></div>
 
         <div class="form-group" style="margin-top:20px;">
-          <label style="font-weight:bold;color:#fff;">Choose Payment Method *</label>
+          <label style="font-weight:bold;color:#fff;">Select Payment Mode *</label>
           <div class="payment-btn-group">
             <button type="button" class="pay-choice-btn active" id="btnPaystack" onclick="selectPayMethod('paystack')">
-              <span class="pay-icon">💳</span>
-              <div class="pay-details"><strong>Paystack</strong><small>Card, MTN MoMo, Telecel, AT</small></div>
+              <span class="pay-icon">⚡</span>
+              <div class="pay-details">
+                <strong>Instant MoMo Prompt</strong>
+                <small>Auto PIN prompt on your phone (MTN, Telecel, AT)</small>
+              </div>
             </button>
             <button type="button" class="pay-choice-btn" id="btnMomo" onclick="selectPayMethod('momo')">
               <span class="pay-icon">📱</span>
-              <div class="pay-details"><strong>Direct MoMo</strong><small>0507482090 (Rexford)</small></div>
+              <div class="pay-details">
+                <strong id="btnMomoTitle">Direct MoMo Transfer</strong>
+                <small id="btnMomoSubtitle">0507482090 (Telecel Cash)</small>
+              </div>
             </button>
           </div>
           <input type="hidden" id="selectedPaymentMethod" value="paystack">
+        </div>
+
+        <div id="momoInstructionsBox" style="display: none; background: #222; padding: 14px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid var(--accent-red); font-size: 0.88rem;">
+          <strong style="color: #fff;">Direct MoMo Details:</strong><br>
+          • Number: <strong id="displayMomoNum" style="color: #fff;">0507482090</strong><br>
+          • Name: <strong id="displayMomoName" style="color: #fff;">Kwakye Rexford Ayeh</strong><br>
+          • Network: <span id="displayMomoNetwork" style="color: #aaa;">Telecel Cash</span><br>
+          <small style="color: #aaa;">Click below to send order details via WhatsApp after payment.</small>
         </div>
 
         <div class="order-summary-box">
@@ -105,12 +119,14 @@
           <h3 style="display:flex;justify-content:space-between;">Total: <span id="totalDisplay">GH₵ 0.00</span></h3>
         </div>
 
-        <button type="submit" class="btn-primary" style="width:100%;padding:15px;margin-top:15px;font-size:1.1rem;">Confirm Order</button>
+        <button type="submit" class="btn-primary" id="checkoutSubmitBtn" style="width:100%;padding:15px;margin-top:15px;font-size:1.1rem;">
+          ⚡ Send MoMo Prompt to My Phone
+        </button>
       </form>
     </div>
   </section>
 
-  <a href="https://wa.me/233507482090" class="whatsapp-float" target="_blank">💬 WhatsApp MonRex</a>
+  <a id="floatingWaBtn" href="https://wa.me/233507482090" class="whatsapp-float" target="_blank">💬 WhatsApp MonRex</a>
   <script src="checkout.js"></script>
 </body>
 </html>
