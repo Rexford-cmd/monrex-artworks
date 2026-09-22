@@ -13,7 +13,7 @@ app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Connect to Neon PostgreSQL with resilient SSL
+// Optimized Connection Pool for Neon
 let pool = null;
 if (process.env.DATABASE_URL) {
   pool = new Pool({
@@ -21,17 +21,16 @@ if (process.env.DATABASE_URL) {
     ssl: {
       rejectUnauthorized: false
     },
-    connectionTimeoutMillis: 10000
+    max: 10,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000 // Fails fast in 5s instead of hanging
   });
-} else {
-  console.error("❌ CRITICAL: DATABASE_URL environment variable is MISSING on Render!");
 }
 
 async function initDB() {
   if (!pool) return;
   try {
     const client = await pool.connect();
-    console.log("✅ Successfully connected to Neon PostgreSQL Database!");
     
     await client.query(`CREATE TABLE IF NOT EXISTS categories (
       id SERIAL PRIMARY KEY, name VARCHAR(100) UNIQUE NOT NULL, sort_order INT DEFAULT 0
@@ -78,19 +77,19 @@ async function initDB() {
     client.release();
     console.log("✅ Neon DB tables initialized and ready!");
   } catch (err) {
-    console.error("❌ Database Initialization Error:", err.message);
+    console.error("❌ DB Init Error:", err.message);
   }
 }
 initDB();
 
-// ===== DB HEALTH CHECK API =====
+// ===== FAST PING / HEALTH CHECK =====
 app.get('/api/db-check', async (req, res) => {
   if (!process.env.DATABASE_URL) {
-    return res.json({ success: false, message: "DATABASE_URL environment variable is NOT set in Render." });
+    return res.json({ success: false, message: "DATABASE_URL is not set on Render." });
   }
   try {
     const result = await pool.query('SELECT NOW()');
-    res.json({ success: true, message: "Connected to Neon DB successfully!", server_time: result.rows[0].now });
+    res.json({ success: true, message: "Connected to Neon DB!", server_time: result.rows[0].now });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -166,8 +165,8 @@ app.delete('/api/categories/:id', async (req, res) => {
 // ===== PRODUCTS APIS =====
 app.get('/api/products', async (req, res) => {
   try {
-    if (!pool) return res.status(500).json({ success: false, error: "DATABASE_URL is not set on server." });
-    const r = await pool.query('SELECT * FROM products ORDER BY id ASC');
+    if (!pool) return res.status(500).json({ success: false, error: "DATABASE_URL is missing." });
+    const r = await pool.query('SELECT id, name, price, category, description, image_url, in_stock FROM products ORDER BY id ASC');
     res.json({ success: true, products: r.rows });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -179,7 +178,7 @@ app.post('/api/products', async (req, res) => {
   if (pin !== ADMIN_PIN) return res.status(403).json({ success: false, message: "Invalid PIN" });
   try {
     const r = await pool.query(
-      'INSERT INTO products (name, price, category, description, image_url) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      'INSERT INTO products (name, price, category, description, image_url) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, price, category, description, in_stock',
       [name, price, category, description, image_url]
     );
     res.status(201).json({ success: true, product: r.rows[0] });
@@ -191,7 +190,7 @@ app.put('/api/products/:id', async (req, res) => {
   if (pin !== ADMIN_PIN) return res.status(403).json({ success: false, message: "Invalid PIN" });
   try {
     const r = await pool.query(
-      'UPDATE products SET name=$1, price=$2, category=$3, description=$4, image_url=$5 WHERE id=$6 RETURNING *',
+      'UPDATE products SET name=$1, price=$2, category=$3, description=$4, image_url=$5 WHERE id=$6 RETURNING id, name, price, category, description, in_stock',
       [name, price, category, description, image_url, req.params.id]
     );
     res.json({ success: true, product: r.rows[0] });
