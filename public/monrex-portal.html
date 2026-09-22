@@ -3,240 +3,299 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard | MonRex Artworks</title>
+  <title>Admin | MonRex Artworks</title>
   <style>
-    :root { --bg: #0f0f0f; --card: #181818; --red: #d32f2f; --text: #fff; --border: #2e2e2e; }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-    body { background: var(--bg); color: var(--text); padding: 20px; }
-    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
-    h1 span { color: var(--red); }
-    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-    .tab-btn { background: var(--card); color: #fff; border: 1px solid var(--border); padding: 10px 20px; border-radius: 6px; cursor: pointer; }
-    .tab-btn.active { background: var(--red); border-color: var(--red); }
-    .panel { display: none; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    th, td { padding: 12px; border: 1px solid var(--border); text-align: left; font-size: 0.9rem; }
-    th { background: #222; }
-    .form-group { margin-bottom: 14px; }
-    label { display: block; font-size: 0.85rem; margin-bottom: 5px; color: #aaa; }
-    input, select, textarea { width: 100%; padding: 10px; background: #222; border: 1px solid var(--border); color: #fff; border-radius: 6px; }
-    .btn { background: var(--red); color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-    .product-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-top: 20px; }
-    .product-item { background: #222; border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
-    .product-item img { width: 100%; height: 140px; object-fit: cover; border-radius: 4px; margin-bottom: 8px; }
+    :root{--bg:#0f0f0f;--card:#181818;--red:#d32f2f;--border:#2e2e2e}
+    *{box-sizing:border-box;margin:0;padding:0;font-family:sans-serif}
+    body{background:var(--bg);color:#fff;padding:15px}
+    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:12px;flex-wrap:wrap;gap:8px}
+    h1 span{color:var(--red)}
+    .tabs{display:flex;gap:6px;margin-bottom:15px;flex-wrap:wrap}
+    .tab-btn{background:var(--card);color:#fff;border:1px solid var(--border);padding:8px 14px;border-radius:6px;cursor:pointer;font-size:.85rem}
+    .tab-btn.active{background:var(--red);border-color:var(--red)}
+    .panel{display:none;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px}
+    table{width:100%;border-collapse:collapse;margin-top:12px;font-size:.85rem}
+    th,td{padding:10px;border:1px solid var(--border);text-align:left}
+    th{background:#222}
+    .form-group{margin-bottom:12px}
+    label{display:block;font-size:.82rem;margin-bottom:4px;color:#aaa}
+    input,select,textarea{width:100%;padding:9px;background:#222;border:1px solid var(--border);color:#fff;border-radius:6px;font-size:.9rem}
+    .btn{background:var(--red);color:#fff;border:none;padding:9px 16px;border-radius:6px;cursor:pointer;font-weight:bold;font-size:.9rem}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:15px}
+    .item{background:#222;border:1px solid var(--border);border-radius:8px;padding:10px}
+    .item img{width:100%;height:120px;object-fit:cover;border-radius:4px;margin-bottom:6px}
   </style>
 </head>
 <body>
-
-  <!-- Admin PIN Overlay -->
-  <div id="pinOverlay" style="position: fixed; inset: 0; background: rgba(0,0,0,0.92); display: flex; justify-content: center; align-items: center; z-index: 1000;">
-    <div style="background: var(--card); padding: 30px; border-radius: 10px; max-width: 350px; width: 90%; text-align: center; border: 1px solid var(--red);">
+  <div id="pinOverlay" style="position:fixed;inset:0;background:rgba(0,0,0,.93);display:flex;justify-content:center;align-items:center;z-index:1000">
+    <div style="background:var(--card);padding:25px;border-radius:10px;max-width:320px;width:90%;text-align:center;border:1px solid var(--red)">
       <h2>Admin Access</h2>
-      <p style="color: #aaa; margin: 10px 0 20px;">Enter your Admin PIN to manage products & orders</p>
-      <input type="password" id="adminPin" placeholder="Enter Admin Password" style="text-align: center; font-size: 1.2rem; margin-bottom: 15px;">
-      <button class="btn" style="width: 100%;" onclick="verifyPin()">Login to Admin</button>
+      <p style="color:#aaa;margin:8px 0 15px">Enter Admin PIN</p>
+      <input type="password" id="adminPin" placeholder="Enter Admin PIN" style="text-align:center;font-size:1.1rem;margin-bottom:12px">
+      <button class="btn" style="width:100%" onclick="verifyPin()">Login</button>
     </div>
   </div>
 
   <header>
-    <h1>Mon<span>Rex</span> Control Center</h1>
-    <a href="/" target="_blank" style="color: #aaa; text-decoration: none;">View Live Shop ↗</a>
+    <h1>Mon<span>Rex</span> Admin</h1>
+    <a href="/" target="_blank" style="color:#aaa;text-decoration:none">View Shop ↗</a>
   </header>
 
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('ordersPanel', this)">📦 Customer Orders</button>
-    <button class="tab-btn" onclick="switchTab('productsPanel', this)">🛍️ Manage Products (Add / Edit)</button>
+    <button class="tab-btn active" onclick="switchTab('ordersPanel',this)">📦 Orders</button>
+    <button class="tab-btn" onclick="switchTab('productsPanel',this)">🛍️ Products</button>
+    <button class="tab-btn" onclick="switchTab('categoriesPanel',this)">📂 Categories</button>
+    <button class="tab-btn" onclick="switchTab('settingsPanel',this)">⚙️ Store Settings</button>
   </div>
 
-  <!-- TAB 1: ORDERS PANEL -->
-  <section id="ordersPanel" class="panel" style="display: block;">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-      <h3>All Store Orders</h3>
-      <button class="btn" onclick="loadOrders()">Refresh Orders</button>
+  <!-- ORDERS -->
+  <section id="ordersPanel" class="panel" style="display:block">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <h3>Customer Orders</h3>
+      <button class="btn" onclick="loadOrders()">Refresh</button>
     </div>
-    <table>
-      <thead>
-        <tr>
-          <th>Order Code</th>
-          <th>Customer</th>
-          <th>Location</th>
-          <th>Items</th>
-          <th>Total</th>
-          <th>Status</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody id="ordersTable"></tbody>
-    </table>
+    <div style="overflow-x:auto"><table><thead><tr><th>Code</th><th>Customer</th><th>Location</th><th>Items</th><th>Total</th><th>Payment</th><th>Status</th></tr></thead><tbody id="ordersTable"></tbody></table></div>
   </section>
 
-  <!-- TAB 2: PRODUCTS CMS PANEL -->
+  <!-- PRODUCTS -->
   <section id="productsPanel" class="panel">
-    <h3>Add New Product to Storefront</h3>
-    <form onsubmit="handleAddProduct(event)" style="max-width: 500px; margin-top: 15px;">
-      <div class="form-group">
-        <label>Product Name *</label>
-        <input type="text" id="prodName" required placeholder="e.g. Red Beaded Luxury Bag">
-      </div>
-      <div class="form-group">
-        <label>Price (GH₵) *</label>
-        <input type="number" step="0.01" id="prodPrice" required placeholder="300">
-      </div>
-      <div class="form-group">
-        <label>Category *</label>
-        <select id="prodCategory" required>
-          <option value="Handmade Beaded Bags">Handmade Beaded Bags</option>
-          <option value="Men's Beaded Bags">Men's Beaded Bags</option>
-          <option value="Handmade Home Décor">Handmade Home Décor</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Description</label>
-        <textarea id="prodDesc" rows="2" placeholder="Describe the item craftsmanship..."></textarea>
-      </div>
-      <div class="form-group">
-        <label>Product Image (Upload File from Device) *</label>
-        <input type="file" id="prodImageFile" accept="image/*" required>
-      </div>
-      <button type="submit" class="btn">Publish Product to Store</button>
+    <h3>Add / Edit Product</h3>
+    <form onsubmit="handleAddProduct(event)" style="max-width:450px;margin-top:12px">
+      <input type="hidden" id="editProdId">
+      <div class="form-group"><label>Name *</label><input type="text" id="prodName" required></div>
+      <div class="form-group"><label>Price (GH₵) *</label><input type="number" step="0.01" id="prodPrice" required></div>
+      <div class="form-group"><label>Category *</label><select id="prodCategory" required></select></div>
+      <div class="form-group"><label>Description</label><textarea id="prodDesc" rows="2"></textarea></div>
+      <div class="form-group"><label>Image (Upload or URL)</label><input type="file" id="prodImageFile" accept="image/*"><input type="text" id="prodImageUrl" placeholder="Or paste image URL" style="margin-top:6px"></div>
+      <button type="submit" class="btn" id="prodSubmitBtn">Publish Product</button>
+      <button type="button" class="btn" style="background:#555;margin-left:8px;display:none" id="cancelEditBtn" onclick="cancelEdit()">Cancel Edit</button>
     </form>
+    <hr style="border-color:var(--border);margin:20px 0">
+    <h3>Existing Products</h3>
+    <div id="adminProductList" class="grid"></div>
+  </section>
 
-    <hr style="border-color: var(--border); margin: 30px 0;">
+  <!-- CATEGORIES -->
+  <section id="categoriesPanel" class="panel">
+    <h3>Manage Categories</h3>
+    <form onsubmit="handleAddCategory(event)" style="max-width:400px;margin-top:12px">
+      <div class="form-group"><label>Category Name *</label><input type="text" id="catName" required placeholder="e.g. Jewelry"></div>
+      <div class="form-group"><label>Icon (Emoji)</label><input type="text" id="catIcon" placeholder="e.g. 💎" maxlength="4"></div>
+      <button type="submit" class="btn">Add Category</button>
+    </form>
+    <hr style="border-color:var(--border);margin:20px 0">
+    <h3>Existing Categories</h3>
+    <div id="catList" class="grid"></div>
+  </section>
 
-    <h3>Existing Products in Neon DB</h3>
-    <div id="adminProductList" class="product-list"></div>
+  <!-- STORE SETTINGS -->
+  <section id="settingsPanel" class="panel">
+    <h3>Edit Storefront Text & Details</h3>
+    <form onsubmit="handleSaveSettings(event)" style="max-width:500px;margin-top:12px">
+      <div class="form-group"><label>Announcement Bar Text</label><input type="text" id="setAnnouncement"></div>
+      <div class="form-group"><label>Hero Title</label><input type="text" id="setHeroTitle"></div>
+      <div class="form-group"><label>Hero Subtitle</label><textarea id="setHeroSubtitle" rows="2"></textarea></div>
+      <div class="form-group"><label>About Us Text</label><textarea id="setAboutText" rows="3"></textarea></div>
+      <div class="form-group"><label>MoMo Number</label><input type="text" id="setMomoNumber"></div>
+      <div class="form-group"><label>MoMo Account Name</label><input type="text" id="setMomoName"></div>
+      <div class="form-group"><label>Phone</label><input type="text" id="setPhone"></div>
+      <div class="form-group"><label>Email</label><input type="text" id="setEmail"></div>
+      <div class="form-group"><label>Location</label><input type="text" id="setLocation"></div>
+      <button type="submit" class="btn">Save All Settings</button>
+    </form>
   </section>
 
   <script>
-    let currentPin = sessionStorage.getItem('monrex_pin') || '';
+    let pin = sessionStorage.getItem('monrex_pin') || '';
 
     function verifyPin() {
-      const pin = document.getElementById('adminPin').value.trim();
-      if (!pin) return alert("Please enter PIN");
-      currentPin = pin;
+      pin = document.getElementById('adminPin').value.trim();
+      if (!pin) return alert('Enter PIN');
       sessionStorage.setItem('monrex_pin', pin);
       document.getElementById('pinOverlay').style.display = 'none';
-      loadOrders();
-      loadAdminProducts();
+      loadAll();
     }
+    if (pin) { document.getElementById('pinOverlay').style.display = 'none'; window.onload = loadAll; }
 
-    if (currentPin) {
-      document.getElementById('pinOverlay').style.display = 'none';
-      window.onload = () => { loadOrders(); loadAdminProducts(); };
-    }
+    function loadAll() { loadOrders(); loadAdminProducts(); loadCategoriesAdmin(); loadSettingsAdmin(); }
 
-    function switchTab(panelId, btn) {
+    function switchTab(id, btn) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
-      btn.classList.add('active');
-      document.getElementById(panelId).style.display = 'block';
+      btn.classList.add('active'); document.getElementById(id).style.display = 'block';
     }
 
-    // Orders Management
+    // ORDERS
     async function loadOrders() {
-      const res = await fetch(`/api/orders?pin=${currentPin}`);
-      const data = await res.json();
-      if (!data.success) return alert("PIN verification failed");
-
-      const tbody = document.getElementById('ordersTable');
-      tbody.innerHTML = data.orders.map(o => `
-        <tr>
+      const r = await fetch(`/api/orders?pin=${pin}`);
+      const d = await r.json();
+      if (!d.success) return alert('PIN failed');
+      document.getElementById('ordersTable').innerHTML = d.orders.map(o => {
+        const items = typeof o.items === 'string' ? JSON.parse(o.items) : o.items;
+        const sc = o.status.toLowerCase();
+        return `<tr>
           <td><strong>#${o.order_code}</strong></td>
-          <td>${o.customer_name}<br><small style="color:#aaa;">${o.phone}</small></td>
-          <td>${o.town}, ${o.region}<br><small style="color:#aaa;">Delivery: GH₵${o.delivery_fee}</small></td>
-          <td>${(typeof o.items === 'string' ? JSON.parse(o.items) : o.items).map(i => `${i.name} (x${i.quantity})`).join('<br>')}</td>
-          <td><strong>GH₵ ${Number(o.total_amount).toFixed(2)}</strong></td>
-          <td>
-            <select onchange="updateStatus(${o.id}, this.value)" style="padding:4px; font-size:0.8rem;">
-              <option ${o.status === 'Pending Payment' ? 'selected' : ''}>Pending Payment</option>
-              <option ${o.status === 'In Production' ? 'selected' : ''}>In Production</option>
-              <option ${o.status === 'Out for Delivery' ? 'selected' : ''}>Out for Delivery</option>
-              <option ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
-            </select>
-          </td>
-          <td>
-            <a href="https://wa.me/233${o.phone.startsWith('0') ? o.phone.substring(1) : o.phone}" target="_blank" style="color:var(--red); font-weight:bold; text-decoration:none;">WhatsApp</a>
-          </td>
-        </tr>
-      `).join('');
+          <td>${o.customer_name}<br><small style="color:#aaa">${o.phone}</small></td>
+          <td>${o.town}<br><small style="color:#aaa">${o.region}</small></td>
+          <td>${items.map(i => `${i.name} x${i.quantity}`).join(', ')}</td>
+          <td><strong>GH₵${Number(o.total_amount).toFixed(2)}</strong><br><small>${o.payment_method}</small></td>
+          <td><small>${o.payment_status || 'Unpaid'}</small></td>
+          <td><select onchange="updateStatus(${o.id},this.value)" style="padding:3px;font-size:.78rem">
+            <option ${o.status==='Pending Payment'?'selected':''}>Pending Payment</option>
+            <option ${o.status==='In Production'?'selected':''}>In Production</option>
+            <option ${o.status==='Out for Delivery'?'selected':''}>Out for Delivery</option>
+            <option ${o.status==='Delivered'?'selected':''}>Delivered</option>
+          </select></td>
+        </tr>`;
+      }).join('');
     }
 
-    async function updateStatus(orderId, newStatus) {
-      await fetch(`/api/orders/${orderId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus, pin: currentPin })
-      });
-      alert(`Order updated to: ${newStatus}`);
+    async function updateStatus(id, status) {
+      await fetch(`/api/orders/${id}/status`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status, pin}) });
+      alert('Status updated!');
     }
 
-    // Products Management
+    // PRODUCTS
     async function loadAdminProducts() {
-      const res = await fetch('/api/products');
-      const data = await res.json();
-      const list = document.getElementById('adminProductList');
-
-      list.innerHTML = data.products.map(p => `
-        <div class="product-item">
+      const r = await fetch('/api/products');
+      const d = await r.json();
+      document.getElementById('adminProductList').innerHTML = d.products.map(p => `
+        <div class="item">
           <img src="${p.image_url || 'https://via.placeholder.com/150'}">
           <h4>${p.name}</h4>
-          <p style="color:var(--red); font-weight:bold; margin:4px 0;">GH₵ ${Number(p.price).toFixed(2)}</p>
-          <p style="font-size:0.75rem; color:#aaa;">${p.category}</p>
-          <div style="margin-top:10px; display:flex; justify-content:space-between;">
-            <button onclick="toggleStock(${p.id}, ${!p.in_stock})" style="padding:4px 8px; font-size:0.75rem; background:#444; color:#fff; border:none; cursor:pointer;">
-              ${p.in_stock ? 'Set Out of Stock' : 'Set In Stock'}
-            </button>
-            <button onclick="deleteProduct(${p.id})" style="padding:4px 8px; font-size:0.75rem; background:var(--red); color:#fff; border:none; cursor:pointer;">
-              Delete
-            </button>
+          <p style="color:var(--red);font-weight:bold">GH₵${Number(p.price).toFixed(2)}</p>
+          <p style="font-size:.72rem;color:#aaa">${p.category}</p>
+          <div style="margin-top:8px;display:flex;gap:4px;flex-wrap:wrap">
+            <button onclick="editProduct(${p.id},'${p.name.replace(/'/g,"\\'")}',${p.price},'${p.category}','${(p.description||'').replace(/'/g,"\\'")}','${p.image_url||''}')" style="padding:3px 6px;font-size:.72rem;background:#0288d1;color:#fff;border:none;cursor:pointer;border-radius:3px">Edit</button>
+            <button onclick="toggleStock(${p.id},${!p.in_stock})" style="padding:3px 6px;font-size:.72rem;background:#555;color:#fff;border:none;cursor:pointer;border-radius:3px">${p.in_stock?'Out of Stock':'In Stock'}</button>
+            <button onclick="deleteProduct(${p.id})" style="padding:3px 6px;font-size:.72rem;background:var(--red);color:#fff;border:none;cursor:pointer;border-radius:3px">Delete</button>
           </div>
-        </div>
-      `).join('');
+        </div>`).join('');
+
+      const catSelect = document.getElementById('prodCategory');
+      const cats = await (await fetch('/api/categories')).json();
+      if (cats.success) catSelect.innerHTML = cats.categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+    }
+
+    function editProduct(id, name, price, category, desc, img) {
+      document.getElementById('editProdId').value = id;
+      document.getElementById('prodName').value = name;
+      document.getElementById('prodPrice').value = price;
+      document.getElementById('prodCategory').value = category;
+      document.getElementById('prodDesc').value = desc;
+      document.getElementById('prodImageUrl').value = img;
+      document.getElementById('prodSubmitBtn').textContent = 'Update Product';
+      document.getElementById('cancelEditBtn').style.display = 'inline-block';
+      window.scrollTo(0, 0);
+    }
+
+    function cancelEdit() {
+      document.getElementById('editProdId').value = '';
+      document.getElementById('prodSubmitBtn').textContent = 'Publish Product';
+      document.getElementById('cancelEditBtn').style.display = 'none';
+      document.querySelector('#productsPanel form').reset();
     }
 
     async function handleAddProduct(e) {
       e.preventDefault();
+      const id = document.getElementById('editProdId').value;
       const name = document.getElementById('prodName').value;
       const price = document.getElementById('prodPrice').value;
       const category = document.getElementById('prodCategory').value;
       const description = document.getElementById('prodDesc').value;
-      const fileInput = document.getElementById('prodImageFile');
+      const urlInput = document.getElementById('prodImageUrl').value;
+      const file = document.getElementById('prodImageFile').files[0];
 
-      const reader = new FileReader();
-      reader.onload = async () => {
-        const image_url = reader.result; // Base64 data URL
-
-        const res = await fetch('/api/products', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, price, category, description, image_url, pin: currentPin })
-        });
-
-        const result = await res.json();
-        if (result.success) {
-          alert('Product published successfully!');
-          e.target.reset();
-          loadAdminProducts();
-        } else {
-          alert('Error: ' + result.message);
-        }
+      const save = async (image_url) => {
+        const endpoint = id ? `/api/products/${id}` : '/api/products';
+        const method = id ? 'PUT' : 'POST';
+        const r = await fetch(endpoint, { method, headers:{'Content-Type':'application/json'}, body: JSON.stringify({name,price,category,description,image_url,pin}) });
+        const d = await r.json();
+        if (d.success) { alert(id ? 'Product updated!' : 'Product published!'); cancelEdit(); loadAdminProducts(); }
+        else alert('Error: ' + (d.message || d.error));
       };
-      reader.readAsDataURL(fileInput.files[0]);
+
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => save(reader.result);
+        reader.readAsDataURL(file);
+      } else { save(urlInput); }
     }
 
     async function toggleStock(id, in_stock) {
-      await fetch(`/api/products/${id}/stock`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ in_stock, pin: currentPin })
-      });
+      await fetch(`/api/products/${id}/stock`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({in_stock, pin}) });
       loadAdminProducts();
     }
 
     async function deleteProduct(id) {
-      if (!confirm("Are you sure you want to remove this product?")) return;
-      await fetch(`/api/products/${id}?pin=${currentPin}`, { method: 'DELETE' });
+      if (!confirm('Delete this product?')) return;
+      await fetch(`/api/products/${id}?pin=${pin}`, {method:'DELETE'});
       loadAdminProducts();
+    }
+
+    // CATEGORIES
+    async function loadCategoriesAdmin() {
+      const r = await fetch('/api/categories');
+      const d = await r.json();
+      document.getElementById('catList').innerHTML = d.categories.map(c => `
+        <div class="item" style="text-align:center">
+          <h2>${c.icon}</h2>
+          <h4>${c.name}</h4>
+          <button onclick="deleteCategory(${c.id})" style="margin-top:8px;padding:3px 8px;font-size:.72rem;background:var(--red);color:#fff;border:none;cursor:pointer;border-radius:3px">Delete</button>
+        </div>`).join('');
+    }
+
+    async function handleAddCategory(e) {
+      e.preventDefault();
+      const name = document.getElementById('catName').value;
+      const icon = document.getElementById('catIcon').value || '🛍️';
+      const r = await fetch('/api/categories', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name, icon, pin}) });
+      const d = await r.json();
+      if (d.success) { alert('Category added!'); e.target.reset(); loadCategoriesAdmin(); loadAdminProducts(); }
+      else alert('Error: ' + (d.error || 'Category may already exist'));
+    }
+
+    async function deleteCategory(id) {
+      if (!confirm('Delete this category?')) return;
+      await fetch(`/api/categories/${id}?pin=${pin}`, {method:'DELETE'});
+      loadCategoriesAdmin();
+    }
+
+    // SETTINGS
+    async function loadSettingsAdmin() {
+      const r = await fetch('/api/settings');
+      const d = await r.json();
+      if (d.success) {
+        const s = d.settings;
+        document.getElementById('setAnnouncement').value = s.announcement || '';
+        document.getElementById('setHeroTitle').value = s.hero_title || '';
+        document.getElementById('setHeroSubtitle').value = s.hero_subtitle || '';
+        document.getElementById('setAboutText').value = s.about_text || '';
+        document.getElementById('setMomoNumber').value = s.momo_number || '';
+        document.getElementById('setMomoName').value = s.momo_name || '';
+        document.getElementById('setPhone').value = s.phone || '';
+        document.getElementById('setEmail').value = s.email || '';
+        document.getElementById('setLocation').value = s.location || '';
+      }
+    }
+
+    async function handleSaveSettings(e) {
+      e.preventDefault();
+      const settings = {
+        announcement: document.getElementById('setAnnouncement').value,
+        hero_title: document.getElementById('setHeroTitle').value,
+        hero_subtitle: document.getElementById('setHeroSubtitle').value,
+        about_text: document.getElementById('setAboutText').value,
+        momo_number: document.getElementById('setMomoNumber').value,
+        momo_name: document.getElementById('setMomoName').value,
+        phone: document.getElementById('setPhone').value,
+        email: document.getElementById('setEmail').value,
+        location: document.getElementById('setLocation').value
+      };
+      const r = await fetch('/api/settings', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({settings, pin}) });
+      const d = await r.json();
+      if (d.success) alert('Store settings saved! Refresh your shop to see changes.');
+      else alert('Error saving settings.');
     }
   </script>
 </body>
