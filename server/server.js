@@ -5,7 +5,7 @@ const { Pool } = require('pg');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const ADMIN_PIN = process.env.ADMIN_PIN || "1234";
+const ADMIN_PIN = process.env.ADMIN_PIN || "ImmortalNat";
 
 // Allow larger payloads for image file uploads (up to 15MB)
 app.use(cors());
