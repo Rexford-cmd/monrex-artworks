@@ -105,7 +105,9 @@ let allProducts = DEFAULT_PRODUCTS;
 let allCategories = ["Handmade Beaded Bags", "Men's Beaded Bags", "Handmade Home Décor"];
 let cart = JSON.parse(localStorage.getItem('monrex_cart')) || [];
 let selectedDeliveryFee = 0;
-let paystackPublicKey = '';
+
+// Your Real Live Paystack Public Key
+let paystackPublicKey = 'pk_live_78d879b3f53903de0c6288e5c1f5f2226e3c1cb4';
 
 document.addEventListener("DOMContentLoaded", function() {
   renderCategoryFilters();
@@ -137,14 +139,11 @@ async function loadSettings() {
       if (d.settings.hero_title) document.getElementById('heroTitle').textContent = d.settings.hero_title;
       if (d.settings.hero_subtitle) document.getElementById('heroSubtitle').textContent = d.settings.hero_subtitle;
       if (d.settings.about_text) document.getElementById('aboutText').textContent = d.settings.about_text;
-      if (d.settings.paystack_public_key) {
-        // Clean key: remove whitespace, linebreaks, quotes
-        paystackPublicKey = d.settings.paystack_public_key.trim().replace(/['"]/g, '');
+      if (d.settings.paystack_public_key && d.settings.paystack_public_key.startsWith('pk_')) {
+        paystackPublicKey = d.settings.paystack_public_key.trim();
       }
     }
-  } catch(e) {
-    console.error("Settings error:", e);
-  }
+  } catch(e) {}
 }
 
 async function loadCategories() {
@@ -334,27 +333,9 @@ function handlePlaceOrder(event) {
 
   // Paystack flow
   if (payMethod === 'paystack') {
-    const cleanKey = (paystackPublicKey || '').trim().replace(/['"]/g, '');
-
-    // Diagnostic validation
-    if (!cleanKey || cleanKey === '') {
-      alert("⚠️ No Paystack Public Key found!\n\nPlease go to Admin Settings and enter your Paystack Public Key (starting with pk_live_ or pk_test_).");
-      return;
-    }
-
-    if (!cleanKey.startsWith('pk_')) {
-      alert("⚠️ Invalid Paystack Key format!\n\nYour key is currently: \"" + cleanKey.substring(0, 8) + "...\"\n\nIt MUST start with 'pk_live_' or 'pk_test_'. Make sure you did NOT enter your secret key (sk_).");
-      return;
-    }
-
-    if (cleanKey.length < 25) {
-      alert("⚠️ Paystack Key seems incomplete!\n\nKey length: " + cleanKey.length + " characters.\nPlease copy the entire Public Key from your Paystack Dashboard.");
-      return;
-    }
-
     try {
       const handler = PaystackPop.setup({
-        key: cleanKey,
+        key: paystackPublicKey,
         email: email,
         amount: Math.round(total * 100),
         currency: 'GHS',
@@ -375,7 +356,7 @@ function handlePlaceOrder(event) {
       });
       handler.openIframe();
     } catch(err) {
-      alert("Paystack startup error: " + err.message);
+      alert("Paystack error: " + err.message);
     }
     return;
   }
