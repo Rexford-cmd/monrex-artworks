@@ -109,7 +109,7 @@
   <div id="pinOverlay" class="overlay">
     <div class="login-box">
       <h2 style="margin-bottom: 8px;">Mon<span>Rex</span> Admin</h2>
-      <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 20px;">Enter your Admin PIN to access the manager</p>
+      <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 20px;">Enter your Admin PIN</p>
       <input type="password" id="adminPinInput" placeholder="Enter PIN" style="text-align: center; font-size: 1.2rem; letter-spacing: 3px; margin-bottom: 15px;">
       <button class="btn" style="width: 100%; padding: 12px;" onclick="verifyPin()">Unlock Dashboard</button>
     </div>
@@ -158,13 +158,13 @@
 
   <!-- TAB 2: PRODUCTS -->
   <section id="productsP" class="panel" style="display: block;">
-    <h3 id="formTitle">Upload Real Product</h3>
+    <h3 id="formTitle">Publish New Product</h3>
     <form onsubmit="handleSaveProduct(event)" style="max-width: 550px; margin-top: 15px;">
       <input type="hidden" id="editProdId" value="">
       
       <div class="fg">
         <label>Product Name *</label>
-        <input type="text" id="pName" required placeholder="e.g. Handmade Beaded Bag">
+        <input type="text" id="pName" required placeholder="e.g. Royal Red Handmade Beaded Bag">
       </div>
 
       <div class="fg">
@@ -179,18 +179,21 @@
 
       <div class="fg">
         <label>Description</label>
-        <textarea id="pDesc" rows="3" placeholder="Handcrafted detail, bead material, dimensions..."></textarea>
+        <textarea id="pDesc" rows="3" placeholder="Describe the style, craftsmanship, materials..."></textarea>
       </div>
 
       <div class="fg">
-        <label>Product Image (Choose Photo from Device) *</label>
+        <label>Product Photo (Select from Phone / Computer)</label>
         <input type="file" id="pImageFile" accept="image/*">
-        <input type="text" id="pImageUrl" placeholder="Or paste image URL" style="margin-top: 8px;">
+        <input type="text" id="pImageUrl" placeholder="Or paste photo link (optional)" style="margin-top: 8px;">
+        <div id="imagePreview" style="margin-top: 10px; display: none;">
+          <img id="previewImg" style="width: 120px; height: 120px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border);">
+        </div>
       </div>
 
       <div style="display: flex; gap: 10px; margin-top: 15px;">
         <button type="submit" class="btn" id="pSubmitBtn">Publish to Store</button>
-        <button type="button" class="btn btn-secondary" onclick="clearProductForm()">Clear / New</button>
+        <button type="button" class="btn btn-secondary" onclick="clearProductForm()">Clear</button>
       </div>
     </form>
 
@@ -199,8 +202,8 @@
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
       <h3>Live Products (<span id="prodCount">0</span>)</h3>
       <div style="display: flex; gap: 8px;">
-        <button class="btn btn-sm btn-secondary" onclick="loadProducts()">🔄 Refresh</button>
-        <button class="btn btn-sm" style="background: #444;" onclick="clearAllProducts()">🗑️ Clear All Items</button>
+        <button class="btn btn-sm btn-secondary" onclick="loadProducts()">🔄 Refresh List</button>
+        <button class="btn btn-sm" style="background: #444;" onclick="clearAllProducts()">🗑️ Delete All</button>
       </div>
     </div>
 
@@ -220,10 +223,10 @@
 
   <!-- TAB 4: SETTINGS -->
   <section id="settingsP" class="panel">
-    <h3>Storefront Settings (Live Website Texts)</h3>
+    <h3>Storefront Settings</h3>
     <div style="max-width: 550px; margin-top: 15px;">
       <div class="fg">
-        <label>Top Announcement Bar Message</label>
+        <label>Announcement Bar Message</label>
         <input type="text" id="sAnnouncement">
       </div>
       <div class="fg">
@@ -264,6 +267,18 @@
         document.getElementById('pinOverlay').style.display = 'none';
         loadAll();
       }
+
+      // Preview image when selected
+      document.getElementById('pImageFile').addEventListener('change', function(e) {
+        if (e.target.files && e.target.files[0]) {
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            document.getElementById('previewImg').src = ev.target.result;
+            document.getElementById('imagePreview').style.display = 'block';
+          };
+          reader.readAsDataURL(e.target.files[0]);
+        }
+      });
     });
 
     function switchTab(id, btn) {
@@ -332,7 +347,7 @@
     async function loadProducts() {
       const list = document.getElementById('prodList');
       try {
-        const r = await fetch('/api/products');
+        const r = await fetch('/api/products?t=' + Date.now());
         const d = await r.json();
         
         if (d.success && d.products && d.products.length > 0) {
@@ -341,7 +356,7 @@
 
           list.innerHTML = adminProducts.map(p => {
             return '<div class="item">' +
-              '<img src="' + (p.image_url || 'https://via.placeholder.com/200') + '">' +
+              '<img src="' + (p.image_url || 'https://via.placeholder.com/200') + '" alt="' + p.name + '">' +
               '<h4 style="font-size:0.95rem; margin-top:4px;">' + p.name + '</h4>' +
               '<p style="color:var(--red); font-weight:bold; margin:3px 0;">GH₵ ' + Number(p.price).toFixed(2) + '</p>' +
               '<p style="font-size:0.75rem; color:#aaa;">' + p.category + '</p>' +
@@ -355,8 +370,8 @@
         } else {
           document.getElementById('prodCount').textContent = "0";
           list.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 30px; background: #222; border-radius: 8px;">' +
-            '<p style="color: #fff; margin-bottom: 6px; font-weight: 600;">Your store is currently empty.</p>' +
-            '<p style="color: #aaa; font-size: 0.88rem;">Use the form above to add your real handmade bead products and pictures!</p>' +
+            '<p style="color: #fff; margin-bottom: 6px; font-weight: 600;">No products uploaded yet.</p>' +
+            '<p style="color: #aaa; font-size: 0.88rem;">Use the form above to upload your first beadwork bag!</p>' +
           '</div>';
         }
       } catch (err) {
@@ -390,6 +405,10 @@
       document.getElementById('pCategory').value = p.category || '';
       document.getElementById('pDesc').value = p.description || '';
       document.getElementById('pImageUrl').value = p.image_url || '';
+      if (p.image_url) {
+        document.getElementById('previewImg').src = p.image_url;
+        document.getElementById('imagePreview').style.display = 'block';
+      }
       document.getElementById('formTitle').textContent = 'Edit Product: ' + p.name;
       document.getElementById('pSubmitBtn').textContent = 'Update Product';
       document.getElementById('productsP').scrollIntoView({ behavior: 'smooth' });
@@ -402,47 +421,93 @@
       document.getElementById('pDesc').value = '';
       document.getElementById('pImageUrl').value = '';
       document.getElementById('pImageFile').value = '';
-      document.getElementById('formTitle').textContent = 'Upload Real Product';
+      document.getElementById('imagePreview').style.display = 'none';
+      document.getElementById('formTitle').textContent = 'Publish New Product';
       document.getElementById('pSubmitBtn').textContent = 'Publish to Store';
+    }
+
+    // Smart Image Compressor Function (Resizes to max 800px)
+    function compressImage(file, callback) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const maxDim = 800;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > maxDim) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            }
+          } else {
+            if (height > maxDim) {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Compress to JPEG 80% quality (reduces 10MB photo to ~100KB)
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+          callback(dataUrl);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
     }
 
     async function handleSaveProduct(e) {
       e.preventDefault();
       const id = document.getElementById('editProdId').value;
-      const name = document.getElementById('pName').value;
+      const name = document.getElementById('pName').value.trim();
       const price = document.getElementById('pPrice').value;
       const category = document.getElementById('pCategory').value;
       const description = document.getElementById('pDesc').value;
       const fileInput = document.getElementById('pImageFile');
-      const urlInput = document.getElementById('pImageUrl').value;
+      const urlInput = document.getElementById('pImageUrl').value.trim();
 
-      const save = async (image_url) => {
+      const saveToServer = async (image_url) => {
         const body = { name, price, category, description, image_url, pin };
         const url = id ? '/api/products/' + id : '/api/products';
         const method = id ? 'PUT' : 'POST';
 
-        const r = await fetch(url, {
-          method,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
-        });
-        const d = await r.json();
+        document.getElementById('pSubmitBtn').textContent = 'Saving to Database...';
 
-        if (d.success) {
-          alert(id ? 'Product updated successfully!' : 'Product published to store successfully!');
-          clearProductForm();
-          loadProducts();
-        } else {
-          alert('Error: ' + (d.message || d.error));
+        try {
+          const r = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+          const d = await r.json();
+
+          if (d.success) {
+            alert(id ? 'Product updated successfully!' : '🎉 Product published to store successfully!');
+            clearProductForm();
+            loadProducts();
+          } else {
+            alert('Error: ' + (d.message || d.error));
+          }
+        } catch(err) {
+          alert('Error saving product: ' + err.message);
+        } finally {
+          document.getElementById('pSubmitBtn').textContent = id ? 'Update Product' : 'Publish to Store';
         }
       };
 
       if (fileInput.files && fileInput.files[0]) {
-        const reader = new FileReader();
-        reader.onload = () => save(reader.result);
-        reader.readAsDataURL(fileInput.files[0]);
+        compressImage(fileInput.files[0], function(compressedDataUrl) {
+          saveToServer(compressedDataUrl);
+        });
       } else {
-        save(urlInput || '');
+        saveToServer(urlInput || '');
       }
     }
 
@@ -464,7 +529,7 @@
     // ===== CATEGORIES LOGIC =====
     async function loadCategories() {
       try {
-        const r = await fetch('/api/categories');
+        const r = await fetch('/api/categories?t=' + Date.now());
         const d = await r.json();
         const cats = (d.categories && d.categories.length) ? d.categories : [
           { id: 1, name: 'Handmade Beaded Bags' },
@@ -526,7 +591,7 @@
     // ===== SETTINGS LOGIC =====
     async function loadSettings() {
       try {
-        const r = await fetch('/api/settings');
+        const r = await fetch('/api/settings?t=' + Date.now());
         const d = await r.json();
         if (d.success && d.settings) {
           document.getElementById('sAnnouncement').value = d.settings.announcement || '';
