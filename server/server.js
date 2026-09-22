@@ -18,16 +18,6 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-const DEFAULT_PRODUCTS = [
-  ['Handmade Beaded Bag', 300.00, 'Handmade Beaded Bags', 'Stylish handmade beaded bag designed with detailed craftsmanship for a unique statement look.', 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=500'],
-  ['Premium Handmade Beaded Bag', 350.00, 'Handmade Beaded Bags', 'Beautiful handcrafted beaded bag combining artistic detail, functionality and contemporary style.', 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=500'],
-  ['Handmade Beaded Tissue Box', 150.00, 'Handmade Home Décor', 'A decorative handmade beaded tissue box designed to add an elegant artistic touch to your space.', 'https://images.unsplash.com/photo-1607344645866-009c320b5ab8?w=500'],
-  ['Classic Handmade Beaded Bag', 200.00, 'Handmade Beaded Bags', 'Unique handmade beaded bags carefully crafted with attention to detail and style.', 'https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=500'],
-  ['Men\'s Beaded Bag (Compact)', 150.00, 'Men\'s Beaded Bags', 'Sleek and masculine handmade beaded bag tailored for minimal essentials.', 'https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?w=500'],
-  ['Men\'s Beaded Bag (Urban)', 200.00, 'Men\'s Beaded Bags', 'Unique handmade beaded bag crafted with bold masculine aesthetic.', 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=500'],
-  ['Men\'s Beaded Bag (Executive)', 250.00, 'Men\'s Beaded Bags', 'Premium handcrafted beadwork bag designed for standout occasions.', 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500']
-];
-
 async function initDB() {
   if (!process.env.DATABASE_URL) return console.log("⚠️ No DATABASE_URL found.");
   try {
@@ -66,37 +56,28 @@ async function initDB() {
       await pool.query(`INSERT INTO store_settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO NOTHING`, [k, v]);
     }
 
+    // Default categories for your real beadwork
     const catCount = await pool.query('SELECT COUNT(*) FROM categories');
     if (parseInt(catCount.rows[0].count) === 0) {
-      for (const c of ['Handmade Beaded Bags', "Men's Beaded Bags", 'Handmade Home Décor']) {
+      for (const c of ['Handmade Beaded Bags', "Men's Beaded Bags", 'Handmade Home Décor', 'Accessories & Jewelry']) {
         await pool.query('INSERT INTO categories (name) VALUES ($1) ON CONFLICT DO NOTHING', [c]);
       }
     }
 
-    const prodCount = await pool.query('SELECT COUNT(*) FROM products');
-    if (parseInt(prodCount.rows[0].count) === 0) {
-      for (const p of DEFAULT_PRODUCTS) {
-        await pool.query('INSERT INTO products (name, price, category, description, image_url) VALUES ($1, $2, $3, $4, $5)', p);
-      }
-      console.log("✅ Seeded initial 7 products into Neon Database!");
-    }
-    console.log("✅ Neon DB tables initialized successfully!");
+    console.log("✅ Neon DB tables ready! Clean store awaiting real products.");
   } catch (err) {
     console.error("❌ DB Init Error:", err.message);
   }
 }
 initDB();
 
-// ===== SEED PRODUCTS ENDPOINT =====
-app.post('/api/products/seed', async (req, res) => {
+// ===== CLEAR ALL PRODUCTS (ADMIN ACTION) =====
+app.post('/api/products/clear-all', async (req, res) => {
   const { pin } = req.body;
   if (pin !== ADMIN_PIN) return res.status(403).json({ success: false, message: "Invalid PIN" });
   try {
-    for (const p of DEFAULT_PRODUCTS) {
-      await pool.query('INSERT INTO products (name, price, category, description, image_url) VALUES ($1, $2, $3, $4, $5)', p);
-    }
-    const r = await pool.query('SELECT * FROM products ORDER BY id ASC');
-    res.json({ success: true, message: "Products loaded into Neon DB!", products: r.rows });
+    await pool.query('DELETE FROM products');
+    res.json({ success: true, message: "All products removed. Store is clean!" });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
