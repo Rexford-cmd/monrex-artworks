@@ -82,7 +82,7 @@
     
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-top: 20px; }
     .item { background: var(--card-elevated); border: 1px solid var(--border); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; }
-    .item img { width: 100%; height: 150px; object-fit: cover; border-radius: 4px; margin-bottom: 8px; background: #111; }
+    .item img { width: 100%; height: 160px; object-fit: cover; border-radius: 4px; margin-bottom: 8px; background: #111; }
     
     .overlay {
       position: fixed;
@@ -106,7 +106,6 @@
 </head>
 <body>
 
-  <!-- Admin PIN Login Overlay -->
   <div id="pinOverlay" class="overlay">
     <div class="login-box">
       <h2 style="margin-bottom: 8px;">Mon<span>Rex</span> Admin</h2>
@@ -125,14 +124,14 @@
   </header>
 
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('ordersP', this)">📦 Customer Orders</button>
-    <button class="tab-btn" onclick="switchTab('productsP', this)">🛍️ Products Manager</button>
+    <button class="tab-btn" onclick="switchTab('ordersP', this)">📦 Customer Orders</button>
+    <button class="tab-btn active" onclick="switchTab('productsP', this)">🛍️ Products Manager</button>
     <button class="tab-btn" onclick="switchTab('categoriesP', this)">📂 Categories</button>
     <button class="tab-btn" onclick="switchTab('settingsP', this)">⚙️ Store Texts & Keys</button>
   </div>
 
   <!-- TAB 1: ORDERS -->
-  <section id="ordersP" class="panel" style="display: block;">
+  <section id="ordersP" class="panel">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
       <h3>All Store Orders</h3>
       <button class="btn btn-sm" onclick="loadOrders()">🔄 Refresh Orders</button>
@@ -158,14 +157,14 @@
   </section>
 
   <!-- TAB 2: PRODUCTS -->
-  <section id="productsP" class="panel">
-    <h3 id="formTitle">Add New Product</h3>
+  <section id="productsP" class="panel" style="display: block;">
+    <h3 id="formTitle">Upload Real Product</h3>
     <form onsubmit="handleSaveProduct(event)" style="max-width: 550px; margin-top: 15px;">
       <input type="hidden" id="editProdId" value="">
       
       <div class="fg">
         <label>Product Name *</label>
-        <input type="text" id="pName" required placeholder="e.g. Luxury Beaded Tote Bag">
+        <input type="text" id="pName" required placeholder="e.g. Handmade Beaded Bag">
       </div>
 
       <div class="fg">
@@ -184,13 +183,13 @@
       </div>
 
       <div class="fg">
-        <label>Product Image (Upload Photo from Device)</label>
+        <label>Product Image (Choose Photo from Device) *</label>
         <input type="file" id="pImageFile" accept="image/*">
         <input type="text" id="pImageUrl" placeholder="Or paste image URL" style="margin-top: 8px;">
       </div>
 
       <div style="display: flex; gap: 10px; margin-top: 15px;">
-        <button type="submit" class="btn" id="pSubmitBtn">Publish Product</button>
+        <button type="submit" class="btn" id="pSubmitBtn">Publish to Store</button>
         <button type="button" class="btn btn-secondary" onclick="clearProductForm()">Clear / New</button>
       </div>
     </form>
@@ -198,16 +197,14 @@
     <hr style="border-color: var(--border); margin: 30px 0;">
     
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-      <h3>Existing Products (<span id="prodCount">0</span>)</h3>
+      <h3>Live Products (<span id="prodCount">0</span>)</h3>
       <div style="display: flex; gap: 8px;">
         <button class="btn btn-sm btn-secondary" onclick="loadProducts()">🔄 Refresh</button>
-        <button class="btn btn-sm" onclick="seedDefaultProducts()">📥 Load Default MonRex Catalog</button>
+        <button class="btn btn-sm" style="background: #444;" onclick="clearAllProducts()">🗑️ Clear All Items</button>
       </div>
     </div>
 
-    <div id="prodList" class="grid">
-      <p style="color: #777; grid-column: 1/-1;">Loading products...</p>
-    </div>
+    <div id="prodList" class="grid"></div>
   </section>
 
   <!-- TAB 3: CATEGORIES -->
@@ -262,10 +259,12 @@
       loadAll();
     }
 
-    if (pin) {
-      document.getElementById('pinOverlay').style.display = 'none';
-      window.onload = loadAll;
-    }
+    document.addEventListener("DOMContentLoaded", () => {
+      if (pin) {
+        document.getElementById('pinOverlay').style.display = 'none';
+        loadAll();
+      }
+    });
 
     function switchTab(id, btn) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -275,26 +274,20 @@
     }
 
     function loadAll() {
-      loadOrders();
       loadCategories();
       loadProducts();
+      loadOrders();
       loadSettings();
     }
 
-    // ===== 1. ORDERS LOGIC =====
+    // ===== ORDERS LOGIC =====
     async function loadOrders() {
+      if (!pin) return;
       try {
         const r = await fetch('/api/orders?pin=' + encodeURIComponent(pin));
         const d = await r.json();
-        if (!d.success) {
-          alert('Access Denied: ' + (d.message || 'Incorrect PIN'));
-          sessionStorage.removeItem('mr_portal_pin');
-          document.getElementById('pinOverlay').style.display = 'flex';
-          return;
-        }
-
         const tbody = document.getElementById('ordersT');
-        if (!d.orders || d.orders.length === 0) {
+        if (!d.success || !d.orders || d.orders.length === 0) {
           tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #777;">No orders received yet.</td></tr>';
           return;
         }
@@ -335,7 +328,7 @@
       alert('Order status updated to: ' + newStatus);
     }
 
-    // ===== 2. PRODUCTS LOGIC =====
+    // ===== PRODUCTS LOGIC =====
     async function loadProducts() {
       const list = document.getElementById('prodList');
       try {
@@ -348,7 +341,7 @@
 
           list.innerHTML = adminProducts.map(p => {
             return '<div class="item">' +
-              '<img src="' + (p.image_url || 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=500') + '">' +
+              '<img src="' + (p.image_url || 'https://via.placeholder.com/200') + '">' +
               '<h4 style="font-size:0.95rem; margin-top:4px;">' + p.name + '</h4>' +
               '<p style="color:var(--red); font-weight:bold; margin:3px 0;">GH₵ ' + Number(p.price).toFixed(2) + '</p>' +
               '<p style="font-size:0.75rem; color:#aaa;">' + p.category + '</p>' +
@@ -361,26 +354,26 @@
           }).join('');
         } else {
           document.getElementById('prodCount').textContent = "0";
-          list.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 20px; background: #222; border-radius: 8px;">' +
-            '<p style="color: #aaa; margin-bottom: 12px;">Your database does not have any products yet.</p>' +
-            '<button class="btn" onclick="seedDefaultProducts()">📥 Load Initial MonRex Catalog into Database</button>' +
+          list.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 30px; background: #222; border-radius: 8px;">' +
+            '<p style="color: #fff; margin-bottom: 6px; font-weight: 600;">Your store is currently empty.</p>' +
+            '<p style="color: #aaa; font-size: 0.88rem;">Use the form above to add your real handmade bead products and pictures!</p>' +
           '</div>';
         }
       } catch (err) {
-        console.error(err);
         list.innerHTML = '<p style="color:var(--red); grid-column:1/-1;">Error connecting to database.</p>';
       }
     }
 
-    async function seedDefaultProducts() {
-      const r = await fetch('/api/products/seed', {
+    async function clearAllProducts() {
+      if (!confirm("Are you sure you want to delete ALL products from your store?")) return;
+      const r = await fetch('/api/products/clear-all', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pin })
       });
       const d = await r.json();
       if (d.success) {
-        alert("MonRex Catalog loaded into Neon Database successfully!");
+        alert("Store cleaned! Ready for your real products.");
         loadProducts();
       } else {
         alert("Error: " + (d.message || d.error));
@@ -409,8 +402,8 @@
       document.getElementById('pDesc').value = '';
       document.getElementById('pImageUrl').value = '';
       document.getElementById('pImageFile').value = '';
-      document.getElementById('formTitle').textContent = 'Add New Product';
-      document.getElementById('pSubmitBtn').textContent = 'Publish Product';
+      document.getElementById('formTitle').textContent = 'Upload Real Product';
+      document.getElementById('pSubmitBtn').textContent = 'Publish to Store';
     }
 
     async function handleSaveProduct(e) {
@@ -436,7 +429,7 @@
         const d = await r.json();
 
         if (d.success) {
-          alert(id ? 'Product updated successfully!' : 'Product added successfully!');
+          alert(id ? 'Product updated successfully!' : 'Product published to store successfully!');
           clearProductForm();
           loadProducts();
         } else {
@@ -468,7 +461,7 @@
       loadProducts();
     }
 
-    // ===== 3. CATEGORIES LOGIC =====
+    // ===== CATEGORIES LOGIC =====
     async function loadCategories() {
       try {
         const r = await fetch('/api/categories');
@@ -530,7 +523,7 @@
       loadProducts();
     }
 
-    // ===== 4. SETTINGS LOGIC =====
+    // ===== SETTINGS LOGIC =====
     async function loadSettings() {
       try {
         const r = await fetch('/api/settings');
