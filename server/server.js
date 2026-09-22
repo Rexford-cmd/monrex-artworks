@@ -13,17 +13,14 @@ app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Optimized Connection Pool for Neon
 let pool = null;
 if (process.env.DATABASE_URL) {
   pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: {
-      rejectUnauthorized: false
-    },
+    ssl: { rejectUnauthorized: false },
     max: 10,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 5000 // Fails fast in 5s instead of hanging
+    connectionTimeoutMillis: 5000
   });
 }
 
@@ -61,6 +58,10 @@ async function initDB() {
       ['hero_title', 'Handcrafted Elegance & Modern Beadwork'],
       ['hero_subtitle', 'MonRex Artworks is a creative handmade brand focused on unique beadwork, handcrafted bags, and artistic pieces in Ashaiman.'],
       ['about_text', 'MonRex Artworks is a creative handmade brand focused on unique beadwork, handcrafted bags, jewelry and artistic pieces. Each piece is carefully made with creativity, patience and attention to detail, bringing together traditional craftsmanship and modern style.'],
+      ['momo_number', '0507482090'],
+      ['momo_name', 'Kwakye Rexford Ayeh'],
+      ['momo_network', 'Telecel Cash (Vodafone)'],
+      ['whatsapp_number', '233507482090'],
       ['paystack_public_key', process.env.PAYSTACK_PUBLIC_KEY || 'pk_live_78d879b3f53903de0c6288e5c1f5f2226e3c1cb4']
     ];
     for (const [k, v] of defaultSettings) {
@@ -69,24 +70,21 @@ async function initDB() {
 
     const catCount = await client.query('SELECT COUNT(*) FROM categories');
     if (parseInt(catCount.rows[0].count) === 0) {
-      for (const c of ['Handmade Beaded Bags', "Men's Beaded Bags", 'Handmade Home Décor']) {
+      for (const c of ['Handmade Beaded Bags', "Men's Beaded Bags", 'Handmade Home Décor', 'Accessories & Jewelry']) {
         await client.query('INSERT INTO categories (name) VALUES ($1) ON CONFLICT DO NOTHING', [c]);
       }
     }
 
     client.release();
-    console.log("✅ Neon DB tables initialized and ready!");
+    console.log("✅ Neon DB initialized!");
   } catch (err) {
     console.error("❌ DB Init Error:", err.message);
   }
 }
 initDB();
 
-// ===== FAST PING / HEALTH CHECK =====
 app.get('/api/db-check', async (req, res) => {
-  if (!process.env.DATABASE_URL) {
-    return res.json({ success: false, message: "DATABASE_URL is not set on Render." });
-  }
+  if (!process.env.DATABASE_URL) return res.json({ success: false, message: "DATABASE_URL is missing." });
   try {
     const result = await pool.query('SELECT NOW()');
     res.json({ success: true, message: "Connected to Neon DB!", server_time: result.rows[0].now });
@@ -95,7 +93,6 @@ app.get('/api/db-check', async (req, res) => {
   }
 });
 
-// ===== CLEAR ALL PRODUCTS =====
 app.post('/api/products/clear-all', async (req, res) => {
   const { pin } = req.body;
   if (pin !== ADMIN_PIN) return res.status(403).json({ success: false, message: "Invalid PIN" });
@@ -107,7 +104,7 @@ app.post('/api/products/clear-all', async (req, res) => {
   }
 });
 
-// ===== SETTINGS APIS =====
+// ===== SETTINGS =====
 app.get('/api/settings', async (req, res) => {
   try {
     if (!pool) return res.json({ success: true, settings: {} });
@@ -127,7 +124,7 @@ app.put('/api/settings', async (req, res) => {
   } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 
-// ===== CATEGORIES APIS =====
+// ===== CATEGORIES =====
 app.get('/api/categories', async (req, res) => {
   try {
     if (!pool) return res.json({ success: true, categories: [] });
@@ -162,7 +159,7 @@ app.delete('/api/categories/:id', async (req, res) => {
   } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 
-// ===== PRODUCTS APIS =====
+// ===== PRODUCTS =====
 app.get('/api/products', async (req, res) => {
   try {
     if (!pool) return res.status(500).json({ success: false, error: "DATABASE_URL is missing." });
@@ -214,7 +211,7 @@ app.delete('/api/products/:id', async (req, res) => {
   } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 
-// ===== ORDERS APIS =====
+// ===== ORDERS =====
 app.get('/api/orders', async (req, res) => {
   if (req.query.pin !== ADMIN_PIN) return res.status(403).json({ success: false, message: "Invalid PIN" });
   try {
