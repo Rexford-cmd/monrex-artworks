@@ -91,25 +91,13 @@ const DELIVERY_RATES = {
   }
 };
 
-const DEFAULT_PRODUCTS = [
-  { id: 1, name: "Handmade Beaded Bag", price: 300, category: "Handmade Beaded Bags", description: "Stylish handmade beaded bag designed with detailed craftsmanship for a unique statement look.", image_url: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=500", in_stock: true },
-  { id: 2, name: "Premium Handmade Beaded Bag", price: 350, category: "Handmade Beaded Bags", description: "Beautiful handcrafted beaded bag combining artistic detail and contemporary style.", image_url: "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=500", in_stock: true },
-  { id: 3, name: "Handmade Beaded Tissue Box", price: 150, category: "Handmade Home Décor", description: "A decorative handmade beaded tissue box designed to add an elegant artistic touch.", image_url: "https://images.unsplash.com/photo-1607344645866-009c320b5ab8?w=500", in_stock: true },
-  { id: 4, name: "Classic Beaded Bag", price: 200, category: "Handmade Beaded Bags", description: "Unique handmade beaded bags carefully crafted with attention to detail and style.", image_url: "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=500", in_stock: true },
-  { id: 5, name: "Men's Beaded Bag (Compact)", price: 150, category: "Men's Beaded Bags", description: "Sleek and masculine handmade beaded bag tailored for minimal essentials.", image_url: "https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?w=500", in_stock: true },
-  { id: 6, name: "Men's Beaded Bag (Urban)", price: 200, category: "Men's Beaded Bags", description: "Unique handmade beaded bag crafted with bold masculine aesthetic.", image_url: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=500", in_stock: true },
-  { id: 7, name: "Men's Beaded Bag (Executive)", price: 250, category: "Men's Beaded Bags", description: "Premium handcrafted beadwork bag designed for standout occasions.", image_url: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500", in_stock: true }
-];
-
-let allProducts = DEFAULT_PRODUCTS;
-let allCategories = ["Handmade Beaded Bags", "Men's Beaded Bags", "Handmade Home Décor"];
+let allProducts = [];
+let allCategories = [];
 let cart = JSON.parse(localStorage.getItem('monrex_cart')) || [];
 let selectedDeliveryFee = 0;
 let paystackPublicKey = 'pk_live_78d879b3f53903de0c6288e5c1f5f2226e3c1cb4';
 
 document.addEventListener("DOMContentLoaded", function() {
-  renderCategoryFilters();
-  renderProducts(allProducts);
   initRegionDropdown();
   updateCartBadge();
   loadSettings();
@@ -146,7 +134,7 @@ async function loadCategories() {
   try {
     const r = await fetch('/api/categories');
     const d = await r.json();
-    if (d.success && d.categories.length) {
+    if (d.success && d.categories && d.categories.length) {
       allCategories = d.categories.map(c => c.name);
       renderCategoryFilters();
     }
@@ -164,7 +152,7 @@ async function fetchProducts() {
   try {
     const r = await fetch('/api/products');
     const d = await r.json();
-    if (d.success && d.products && d.products.length > 0) {
+    if (d.success && d.products) {
       allProducts = d.products;
       renderProducts(allProducts);
     }
@@ -174,13 +162,17 @@ async function fetchProducts() {
 function renderProducts(products) {
   const grid = document.getElementById('productGrid');
   if (!grid) return;
-  if (!products || !products.length) {
-    grid.innerHTML = '<p style="text-align:center;grid-column:1/-1;color:#777;">No products available.</p>';
+  if (!products || products.length === 0) {
+    grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px 20px; background: #181818; border-radius: 10px; border: 1px dashed #333;">' +
+      '<h3 style="color: #fff; margin-bottom: 8px;">✨ New Collection Coming Soon!</h3>' +
+      '<p style="color: #aaa; font-size: 0.95rem;">We are currently crafting and uploading our latest handmade beaded designs.</p>' +
+      '<a href="https://wa.me/233507482090" target="_blank" class="btn-primary" style="display: inline-block; margin-top: 15px; text-decoration: none;">Chat on WhatsApp for Custom Orders</a>' +
+    '</div>';
     return;
   }
   grid.innerHTML = products.map(p =>
     '<div class="product-card">' +
-      '<img src="' + (p.image_url || 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=500') + '" class="product-image" alt="' + p.name + '">' +
+      '<img src="' + (p.image_url || 'https://via.placeholder.com/300x220?text=MonRex+Artworks') + '" class="product-image" alt="' + p.name + '">' +
       '<div class="product-info">' +
         '<div>' +
           '<span class="product-category">' + p.category + '</span>' +
