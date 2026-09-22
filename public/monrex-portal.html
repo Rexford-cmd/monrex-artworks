@@ -127,7 +127,7 @@
     <button class="tab-btn" onclick="switchTab('ordersP', this)">📦 Customer Orders</button>
     <button class="tab-btn active" onclick="switchTab('productsP', this)">🛍️ Products Manager</button>
     <button class="tab-btn" onclick="switchTab('categoriesP', this)">📂 Categories</button>
-    <button class="tab-btn" onclick="switchTab('settingsP', this)">⚙️ Store Texts & Keys</button>
+    <button class="tab-btn" onclick="switchTab('settingsP', this)">⚙️ Store Settings & MoMo</button>
   </div>
 
   <!-- TAB 1: ORDERS -->
@@ -158,13 +158,13 @@
 
   <!-- TAB 2: PRODUCTS -->
   <section id="productsP" class="panel" style="display: block;">
-    <h3 id="formTitle">Publish New Product</h3>
+    <h3 id="formTitle">Publish Real Product</h3>
     <form onsubmit="handleSaveProduct(event)" style="max-width: 550px; margin-top: 15px;">
       <input type="hidden" id="editProdId" value="">
       
       <div class="fg">
         <label>Product Name *</label>
-        <input type="text" id="pName" required placeholder="e.g. Royal Red Handmade Beaded Bag">
+        <input type="text" id="pName" required placeholder="e.g. Handmade Beaded Bag">
       </div>
 
       <div class="fg">
@@ -179,13 +179,13 @@
 
       <div class="fg">
         <label>Description</label>
-        <textarea id="pDesc" rows="3" placeholder="Describe the style, craftsmanship, materials..."></textarea>
+        <textarea id="pDesc" rows="3" placeholder="Handcrafted detail, bead material, dimensions..."></textarea>
       </div>
 
       <div class="fg">
-        <label>Product Photo (Select from Phone / Computer)</label>
+        <label>Product Image (Choose Photo from Device)</label>
         <input type="file" id="pImageFile" accept="image/*">
-        <input type="text" id="pImageUrl" placeholder="Or paste photo link (optional)" style="margin-top: 8px;">
+        <input type="text" id="pImageUrl" placeholder="Or paste image URL" style="margin-top: 8px;">
         <div id="imagePreview" style="margin-top: 10px; display: none;">
           <img id="previewImg" style="width: 120px; height: 120px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border);">
         </div>
@@ -202,7 +202,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
       <h3>Live Products (<span id="prodCount">0</span>)</h3>
       <div style="display: flex; gap: 8px;">
-        <button class="btn btn-sm btn-secondary" onclick="loadProducts()">🔄 Refresh List</button>
+        <button class="btn btn-sm btn-secondary" onclick="loadProducts()">🔄 Refresh</button>
         <button class="btn btn-sm" style="background: #444;" onclick="clearAllProducts()">🗑️ Delete All</button>
       </div>
     </div>
@@ -221,12 +221,41 @@
     <div id="catList" style="max-width: 500px;"></div>
   </section>
 
-  <!-- TAB 4: SETTINGS -->
+  <!-- TAB 4: SETTINGS & MOMO -->
   <section id="settingsP" class="panel">
-    <h3>Storefront Settings</h3>
+    <h3>Store Settings & Direct MoMo Details</h3>
     <div style="max-width: 550px; margin-top: 15px;">
+
+      <div style="background: #222; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--red);">
+        <h4 style="margin-bottom: 12px; color: #fff;">📱 Direct MoMo Configuration (Displayed to Customers)</h4>
+        
+        <div class="fg">
+          <label>Direct MoMo Number *</label>
+          <input type="text" id="sMomoNumber" placeholder="0507482090">
+        </div>
+
+        <div class="fg">
+          <label>Account Name (Registered on SIM) *</label>
+          <input type="text" id="sMomoName" placeholder="Kwakye Rexford Ayeh">
+        </div>
+
+        <div class="fg">
+          <label>Network Provider *</label>
+          <select id="sMomoNetwork">
+            <option value="Telecel Cash (Vodafone)">Telecel Cash (Vodafone)</option>
+            <option value="MTN Mobile Money">MTN Mobile Money</option>
+            <option value="AT Money (AirtelTigo)">AT Money (AirtelTigo)</option>
+          </select>
+        </div>
+
+        <div class="fg">
+          <label>WhatsApp Support / Order Number (with Country Code) *</label>
+          <input type="text" id="sWhatsappNumber" placeholder="233507482090">
+        </div>
+      </div>
+
       <div class="fg">
-        <label>Announcement Bar Message</label>
+        <label>Top Announcement Bar Message</label>
         <input type="text" id="sAnnouncement">
       </div>
       <div class="fg">
@@ -245,7 +274,8 @@
         <label>Paystack Public Key</label>
         <input type="text" id="sPaystackKey" placeholder="pk_live_xxxx... or pk_test_xxxx...">
       </div>
-      <button class="btn" onclick="saveSettings()">Save All Changes</button>
+
+      <button class="btn" style="width: 100%; padding: 12px; font-size: 1rem;" onclick="saveSettings()">Save All Settings & MoMo Info</button>
     </div>
   </section>
 
@@ -268,7 +298,6 @@
         loadAll();
       }
 
-      // Preview image when selected
       document.getElementById('pImageFile').addEventListener('change', function(e) {
         if (e.target.files && e.target.files[0]) {
           const reader = new FileReader();
@@ -388,7 +417,7 @@
       });
       const d = await r.json();
       if (d.success) {
-        alert("Store cleaned! Ready for your real products.");
+        alert("Store cleaned!");
         loadProducts();
       } else {
         alert("Error: " + (d.message || d.error));
@@ -422,11 +451,10 @@
       document.getElementById('pImageUrl').value = '';
       document.getElementById('pImageFile').value = '';
       document.getElementById('imagePreview').style.display = 'none';
-      document.getElementById('formTitle').textContent = 'Publish New Product';
+      document.getElementById('formTitle').textContent = 'Publish Real Product';
       document.getElementById('pSubmitBtn').textContent = 'Publish to Store';
     }
 
-    // Smart Image Compressor Function (Resizes to max 800px)
     function compressImage(file, callback) {
       const reader = new FileReader();
       reader.onload = function(e) {
@@ -454,7 +482,6 @@
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
 
-          // Compress to JPEG 80% quality (reduces 10MB photo to ~100KB)
           const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
           callback(dataUrl);
         };
@@ -478,7 +505,7 @@
         const url = id ? '/api/products/' + id : '/api/products';
         const method = id ? 'PUT' : 'POST';
 
-        document.getElementById('pSubmitBtn').textContent = 'Saving to Database...';
+        document.getElementById('pSubmitBtn').textContent = 'Saving...';
 
         try {
           const r = await fetch(url, {
@@ -526,7 +553,7 @@
       loadProducts();
     }
 
-    // ===== CATEGORIES LOGIC =====
+    // ===== CATEGORIES =====
     async function loadCategories() {
       try {
         const r = await fetch('/api/categories?t=' + Date.now());
@@ -588,12 +615,17 @@
       loadProducts();
     }
 
-    // ===== SETTINGS LOGIC =====
+    // ===== SETTINGS =====
     async function loadSettings() {
       try {
         const r = await fetch('/api/settings?t=' + Date.now());
         const d = await r.json();
         if (d.success && d.settings) {
+          document.getElementById('sMomoNumber').value = d.settings.momo_number || '0507482090';
+          document.getElementById('sMomoName').value = d.settings.momo_name || 'Kwakye Rexford Ayeh';
+          document.getElementById('sMomoNetwork').value = d.settings.momo_network || 'Telecel Cash (Vodafone)';
+          document.getElementById('sWhatsappNumber').value = d.settings.whatsapp_number || '233507482090';
+          
           document.getElementById('sAnnouncement').value = d.settings.announcement || '';
           document.getElementById('sHeroTitle').value = d.settings.hero_title || '';
           document.getElementById('sHeroSub').value = d.settings.hero_subtitle || '';
@@ -607,6 +639,10 @@
 
     async function saveSettings() {
       const fields = [
+        ['momo_number', document.getElementById('sMomoNumber').value.trim()],
+        ['momo_name', document.getElementById('sMomoName').value.trim()],
+        ['momo_network', document.getElementById('sMomoNetwork').value.trim()],
+        ['whatsapp_number', document.getElementById('sWhatsappNumber').value.trim()],
         ['announcement', document.getElementById('sAnnouncement').value],
         ['hero_title', document.getElementById('sHeroTitle').value],
         ['hero_subtitle', document.getElementById('sHeroSub').value],
@@ -621,7 +657,7 @@
           body: JSON.stringify({ key, value, pin })
         });
       }
-      alert('All Store Settings saved successfully! Changes are live on your shop.');
+      alert('✅ All Settings, MoMo Number, and Store Texts saved successfully!');
     }
   </script>
 </body>
