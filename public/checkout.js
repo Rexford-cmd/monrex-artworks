@@ -105,8 +105,6 @@ let allProducts = DEFAULT_PRODUCTS;
 let allCategories = ["Handmade Beaded Bags", "Men's Beaded Bags", "Handmade Home Décor"];
 let cart = JSON.parse(localStorage.getItem('monrex_cart')) || [];
 let selectedDeliveryFee = 0;
-
-// Default Key
 let paystackPublicKey = 'pk_live_78d879b3f53903de0c6288e5c1f5f2226e3c1cb4';
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -139,9 +137,7 @@ async function loadSettings() {
       if (d.settings.hero_title) document.getElementById('heroTitle').textContent = d.settings.hero_title;
       if (d.settings.hero_subtitle) document.getElementById('heroSubtitle').textContent = d.settings.hero_subtitle;
       if (d.settings.about_text) document.getElementById('aboutText').textContent = d.settings.about_text;
-      if (d.settings.paystack_public_key && d.settings.paystack_public_key.trim().startsWith('pk_')) {
-        paystackPublicKey = d.settings.paystack_public_key.trim();
-      }
+      if (d.settings.paystack_public_key) paystackPublicKey = d.settings.paystack_public_key;
     }
   } catch(e) {}
 }
@@ -331,39 +327,24 @@ function handlePlaceOrder(event) {
   const subtotal = getSubtotal();
   const total = subtotal + selectedDeliveryFee;
 
-  // Paystack flow
   if (payMethod === 'paystack') {
-    const cleanKey = paystackPublicKey.trim();
-
     try {
       const handler = PaystackPop.setup({
-        key: cleanKey,
+        key: paystackPublicKey,
         email: email,
         amount: Math.round(total * 100),
         currency: 'GHS',
         ref: 'MRX-' + Date.now(),
-        metadata: {
-          custom_fields: [
-            { display_name: "Customer Name", variable_name: "customer_name", value: name },
-            { display_name: "Phone Number", variable_name: "phone_number", value: phone },
-            { display_name: "Delivery Location", variable_name: "delivery_location", value: town + ", " + region }
-          ]
-        },
         callback: function(response) {
           saveOrder(name, phone, email, region, town, total, 'Paystack', response.reference);
         },
-        onClose: function() {
-          alert("Payment window closed.");
-        }
+        onClose: function() { alert("Payment window closed."); }
       });
       handler.openIframe();
-    } catch(err) {
-      alert("Paystack error: " + err.message);
-    }
+    } catch(err) { alert("Paystack error: " + err.message); }
     return;
   }
 
-  // Direct MoMo flow
   saveOrder(name, phone, email, region, town, total, 'Direct MoMo', '').then(() => {
     const itemsText = cart.map(i => '• ' + i.name + ' (x' + i.quantity + ') - GH₵' + (i.price * i.quantity).toFixed(2)).join('\n');
     const wa = encodeURIComponent(
@@ -406,9 +387,7 @@ function saveOrder(name, phone, email, region, town, total, method, ref) {
       trackOrder();
     }
   })
-  .catch(e => {
-    alert("Order saved. Contacting via WhatsApp...");
-  });
+  .catch(e => { alert("Order saved. Contacting via WhatsApp..."); });
 }
 
 function trackOrder() {
