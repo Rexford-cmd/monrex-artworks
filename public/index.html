@@ -3,14 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MonRex Artworks | Handmade Beaded Bags & Art</title>
+  
+  <!-- Primary SEO Meta Tags for Google Search -->
+  <title>MonRex Artworks | Handmade Beaded Bags & Art Ghana</title>
+  <meta name="title" content="MonRex Artworks | Handmade Beaded Bags & Art Ghana">
+  <meta name="description" content="Shop luxury handmade beaded bags, men's beaded bags, and handcrafted home décor in Ghana. Nationwide delivery to Accra, Kumasi, Takoradi, and all 16 regions.">
+  <meta name="keywords" content="beaded bags Ghana, handmade beadwork Accra, bead bags Ashaiman, beaded tissue box, men beaded bags, MonRex Artworks, Ghana handmade crafts">
+  <meta name="author" content="MonRex Artworks">
+  <meta name="robots" content="index, follow">
+
+  <!-- Open Graph / WhatsApp / Facebook Rich Link Preview -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://monrex-artworks.onrender.com/">
+  <meta property="og:title" content="MonRex Artworks | Creating Beauty, One Bead at a Time">
+  <meta property="og:description" content="Unique handcrafted beaded bags & home décor. Fast nationwide delivery across Ghana. Pay with MoMo or Card.">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800">
+
+  <!-- Twitter Preview -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://monrex-artworks.onrender.com/">
+  <meta property="twitter:title" content="MonRex Artworks | Handmade Beaded Bags Ghana">
+  <meta property="twitter:description" content="Unique handcrafted beaded bags & home décor. Delivery across all 16 regions in Ghana.">
+  <meta property="twitter:image" content="https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800">
+
   <link rel="stylesheet" href="styles.css">
   <script src="https://js.paystack.co/v1/inline.js"></script>
 </head>
 <body>
 
+  <!-- Top Announcement Bar -->
   <div class="announcement-bar" id="announcementBar">✨ Handmade with passion • Unique designs • Ghana-wide delivery available 🇬🇭</div>
 
+  <!-- Header & Navigation -->
   <header class="header">
     <div class="logo-area" onclick="showSection('home')">
       <h1>Mon<span>Rex</span> Artworks</h1>
@@ -25,6 +49,7 @@
     </nav>
   </header>
 
+  <!-- ================= SECTION 1: HOME & PRODUCTS ================= -->
   <main id="homeSection">
     <section class="hero">
       <h2 id="heroTitle">Handcrafted Elegance & Modern Beadwork</h2>
@@ -44,6 +69,7 @@
     </section>
   </main>
 
+  <!-- ================= SECTION 2: ABOUT US ================= -->
   <section id="aboutSection" class="container" style="display:none;">
     <div class="content-box">
       <h3 class="section-title">About MonRex Artworks</h3>
@@ -56,6 +82,7 @@
     </div>
   </section>
 
+  <!-- ================= SECTION 3: TRACK ORDER ================= -->
   <section id="trackSection" class="container" style="display:none;">
     <div class="checkout-box">
       <h3 class="section-title">Track Your Order</h3>
@@ -68,6 +95,7 @@
     </div>
   </section>
 
+  <!-- ================= SECTION 4: CART & CHECKOUT ================= -->
   <section id="checkoutSection" class="container" style="display:none;">
     <div class="checkout-box">
       <h3 class="section-title">Delivery & Checkout</h3>
@@ -83,6 +111,7 @@
         <div class="form-group"><label>Delivery Region *</label><select id="regionSelect" required></select></div>
         <div class="form-group"><label>Town / Area *</label><select id="townSelect" disabled required></select></div>
 
+        <!-- Payment Mode Select -->
         <div class="form-group" style="margin-top:20px;">
           <label style="font-weight:bold;color:#fff;">Select Payment Mode *</label>
           <div class="payment-btn-group">
@@ -104,11 +133,12 @@
           <input type="hidden" id="selectedPaymentMethod" value="paystack">
         </div>
 
+        <!-- Dynamic Direct MoMo Instructions (Controlled by Admin) -->
         <div id="momoInstructionsBox" style="display: none; background: #222; padding: 14px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid var(--accent-red); font-size: 0.88rem;">
           <strong style="color: #fff;">Direct MoMo Details:</strong><br>
           • Number: <strong id="displayMomoNum" style="color: #fff;">0507482090</strong><br>
           • Name: <strong id="displayMomoName" style="color: #fff;">Kwakye Rexford Ayeh</strong><br>
-          • Network: <span id="displayMomoNetwork" style="color: #aaa;">Telecel Cash</span><br>
+          • Network: <span id="displayMomoNetwork" style="color: #aaa;">Telecel Cash (Vodafone)</span><br>
           <small style="color: #aaa;">Click below to send order details via WhatsApp after payment.</small>
         </div>
 
@@ -126,7 +156,9 @@
     </div>
   </section>
 
+  <!-- Floating WhatsApp Direct Contact -->
   <a id="floatingWaBtn" href="https://wa.me/233507482090" class="whatsapp-float" target="_blank">💬 WhatsApp MonRex</a>
+  
   <script src="checkout.js"></script>
 </body>
 </html>
